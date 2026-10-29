@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#fffaf8" />
+<title>CDE · Simulador de Esquadrias e Vidros</title>
+
+<!-- Tailwind CSS via CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          base:   '#fffaf8',
+          panel:  '#ffffff',
+          panel2: '#fdf6f3',
+          line:   '#ffedd5',
+          accent: '#e65c00',
+          accent2:'#c93a0b'
+        },
+        fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'] }
+      }
+    }
+  };
+</script>
+
+<style>
+  html, body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+  #canvasWrap, #view { touch-action: none; user-select: none; -webkit-user-select: none; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #fdba74; border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  input[type="range"] { accent-color: #e65c00; }
+
+  .step {
+    display: flex; align-items: center; gap: .5rem;
+    border-radius: .75rem; border: 1px solid #ffedd5;
+    background: #ffffff; padding: .5rem .55rem;
+    transition: all .25s ease; min-width: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .step .step-num {
+    width: 1.35rem; height: 1.35rem; border-radius: 9999px; flex: none;
+    display: grid; place-items: center;
+    font-size: .65rem; font-weight: 800;
+    background: #fdf6f3; color: #fdba74; transition: all .25s ease;
+  }
+  .step[data-state="active"] {
+    border-color: rgba(230, 92, 0, 0.45);
+    background: #fffcf9;
+    box-shadow: 0 0 0 1px rgba(230, 92, 0, 0.12), 0 4px 12px -4px rgba(230, 92, 0, 0.2);
+  }
+  .step[data-state="active"] .step-num { background: #e65c00; color: #ffffff; }
+  .step[data-state="done"] .step-num { background: #dcfce7; color: #166534; }
+  .step[data-state="done"] { border-color: rgba(34,197,94,.3); }
+
+  .swatch-active { outline: 2px solid #e65c00; outline-offset: 2px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    border-radius: .75rem; font-size: .75rem; font-weight: 600;
+    padding: .55rem .85rem; transition: all .18s ease; cursor: pointer;
+    border: 1px solid #e5e5e5; background: #ffffff; color: #525252;
+    white-space: nowrap; min-height: 40px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .btn:hover  { border-color: #d4d4d4; background: #fafafa; color: #171717; }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+  
+  .btn-active {
+    background: #fff7ed !important;
+    border-color: #e65c00 !important;
+    color: #e65c00 !important;
+  }
+
+  .btn-accent {
+    background: linear-gradient(180deg, #f0651a, #c93a0b);
+    border-color: #e65c00; color: #fff; font-weight: 700;
+    box-shadow: 0 4px 12px -4px rgba(230, 92, 0, 0.4);
+  }
+  .btn-accent:hover { background: linear-gradient(180deg, #ff7a33, #e65c00); color: #fff; border-color: #e65c00; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .fade-up { animation: fadeUp .35s ease both; }
+
+  #modalPreview { backdrop-filter: blur(4px); }
+
+  #canvasWrap.modo-criacao { cursor: crosshair; }
+  #canvasWrap.modo-anotacao { cursor: crosshair; }
+  #canvasWrap.modo-anotacao #hint { border-color: #e65c00; color: #e65c00; background: #fff; }
+</style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 text-slate-800 font-sans antialiased selection:bg-accent/20 flex flex-col">
+
+<!-- TOPBAR -->
+<header class="shrink-0 border-b border-orange-100 bg-white/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 shadow-sm z-20">
+  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent2 grid place-items-center shadow-lg shadow-accent/20">
+    <span class="text-white font-black text-sm tracking-tighter">CDE</span>
+  </div>
+  <div class="min-w-0">
+    <h1 class="text-sm font-bold tracking-tight text-slate-900 truncate">Simulador de Esquadrias</h1>
+    <p class="text-[11px] text-slate-500 truncate">Visualização de produtos direto na obra</p>
+  </div>
+</header>
+
+<!-- CONTAINER PRINCIPAL -->
+<div class="flex flex-col lg:flex-row flex-1 lg:h-[calc(100vh-65px)] lg:overflow-hidden">
+
+  <!-- MAIN -->
+  <main class="flex-1 flex flex-col min-h-0 overflow-y-auto">
+    <!-- Passos -->
+    <div class="shrink-0 px-3 pt-3 pb-1">
+      <div class="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
+        <div id="step1" class="step" data-state="active">
+          <span class="step-num">1</span>
+          <span class="text-[10px] leading-tight font-semibold text-slate-700">Suba a foto</span>
+        </div>
+        <div id="step2" class="step" data-state="idle">
+          <span class="step-num">2</span>
+          <span class="text-[10px] leading-tight font-semibold text-slate-700">Marque 4 cantos</span>
+        </div>
+        <div id="step3" class="step" data-state="idle">
+          <span class="step-num">3</span>
+          <span class="text-[10px] leading-tight font-semibold text-slate-700">Configure o produto</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Palco -->
+    <div class="flex-1 p-3 flex items-start lg:items-center justify-center">
+      <div class="w-full max-w-3xl mx-auto">
+
+        <!-- Dropzone -->
+        <div id="dropzone"
+             class="relative rounded-2xl border-2 border-dashed border-orange-200 bg-white/60 p-7 sm:p-10 text-center transition-colors hover:border-accent/50 hover:bg-white/80">
+          <div class="mx-auto w-14 h-14 rounded-2xl bg-orange-50 border border-orange-100 grid place-items-center mb-4 shadow-sm">
+            <svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </div>
+          <h2 class="text-base font-bold text-slate-900">Comece pela foto do ambiente</h2>
+          <p class="mt-1.5 text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+            Fotografe a parede onde a esquadria será instalada. Você poderá adicionar vários produtos na mesma foto.
+          </p>
+          <div class="mt-5 flex flex-col sm:flex-row gap-2 justify-center">
+            <label class="btn btn-accent cursor-pointer">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>
+              </svg>
+              Galeria
+              <input id="inputGaleria" type="file" accept="image/*" class="hidden">
+            </label>
+            <label class="btn cursor-pointer">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+              </svg>
+              Tirar foto
+              <input id="inputCamera" type="file" accept="image/*" capture="environment" class="hidden">
+            </label>
+          </div>
+        </div>
+
+        <!-- Canvas Stack -->
+        <div id="canvasWrap"
+             class="hidden relative rounded-2xl overflow-hidden border border-orange-200 bg-black shadow-xl shadow-orange-900/10 fade-up">
+          <canvas id="view" class="block w-full h-auto pointer-events-none"></canvas>
+          <div id="overlayContainer" class="absolute inset-0 w-full h-full pointer-events-none"></div>
+          
+          <!-- Camada de Anotações -->
+          <canvas id="annotations" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+          
+          <!-- Camada de UI (Bordas e Pontos) -->
+          <canvas id="ui" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+
+          <div id="hint"
+               class="absolute left-1/2 -translate-x-1/2 bottom-3 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur border border-orange-200 text-[10px] sm:text-[11px] text-slate-700 whitespace-nowrap pointer-events-none text-center transition-colors shadow-sm">
+            Toque nos cantos do vão
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div id="toolbar" class="hidden mt-3 flex flex-wrap items-center gap-2 justify-center sm:justify-start">
+          <button id="btnNovoVaoToolbar" class="btn">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+            </svg>
+            Novo Vão
+          </button>
+          <button id="btnLimparTudo" class="btn">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+            </svg>
+            Limpar Tudo
+          </button>
+          <button id="btnTrocar" class="btn">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>
+            </svg>
+            Trocar Foto
+          </button>
+          
+          <div class="w-px h-6 bg-orange-200 mx-1 hidden sm:block"></div>
+
+          <button id="btnAnotacaoSeta" class="btn" title="Desenhar Seta">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            Seta
+          </button>
+          <button id="btnAnotacaoBalao" class="btn" title="Adicionar Balão de Texto">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Balão
+          </button>
+
+          <div class="flex-1"></div>
+          
+          <button id="btnPreview" class="btn border-accent/30 text-accent hover:bg-orange-50">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            Visualizar
+          </button>
+          <button id="btnSalvar" class="btn btn-accent">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>
+            </svg>
+            Baixar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- SIDEBAR -->
+  <aside class="w-full lg:w-[380px] shrink-0 border-t lg:border-t-0 lg:border-l border-orange-100 bg-white lg:overflow-y-auto shadow-xl shadow-orange-900/5 z-10">
+    <div class="p-4 space-y-6 pb-20 lg:pb-4">
+
+      <!-- Vãos -->
+      <section>
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-4 rounded-full bg-accent"></span>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Vãos na imagem</h3>
+          </div>
+          <button id="btnNovoVaoSidebar" class="btn text-[10px] px-2 py-1">+ Novo Vão</button>
+        </div>
+        <div class="flex gap-2">
+          <div class="relative flex-1">
+            <select id="selVao" class="w-full appearance-none rounded-xl border border-orange-200 bg-white px-3 py-2.5 pr-9 text-sm text-slate-800 font-medium outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            </select>
+            <svg class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </div>
+          <button id="btnRemoverVao" class="btn px-2.5 py-2.5 disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+            </svg>
+          </button>
+        </div>
+        <p id="vaoInfo" class="mt-1.5 text-[10px] text-slate-500"></p>
+      </section>
+
+      <!-- Painel de Configuração -->
+      <div id="configPanel" class="space-y-5 transition-opacity">
+        <section>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-1.5 h-4 rounded-full bg-accent"></span>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Produto</h3>
+          </div>
+          <div class="relative">
+            <select id="selProduto" class="w-full appearance-none rounded-xl border border-orange-200 bg-white px-3 py-2.5 pr-9 text-sm text-slate-800 font-medium outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/10 cursor-pointer">
+            </select>
+            <svg class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </div>
+          <div id="produtoInfo" class="mt-2.5 rounded-xl bg-orange-50/50 border border-orange-100 p-3 text-[11px] text-slate-600"></div>
+        </section>
+
+        <section>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-1.5 h-4 rounded-full bg-accent"></span>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Cor do Alumínio</h3>
+          </div>
+          <div id="gridCores" class="grid grid-cols-3 gap-2"></div>
+        </section>
+
+        <section>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-1.5 h-4 rounded-full bg-accent"></span>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Acabamento (Alumínio)</h3>
+          </div>
+          <div id="gridAcabamentos" class="grid grid-cols-2 gap-2"></div>
+        </section>
+
+        <section>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-1.5 h-4 rounded-full bg-accent"></span>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Tipo de Vidro</h3>
+          </div>
+          <div id="gridVidros" class="grid grid-cols-4 gap-1.5"></div>
+        </section>
+
+        <section>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-1.5 h-4 rounded-full bg-accent"></span>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Integração com a foto</h3>
+          </div>
+          <div class="rounded-xl bg-orange-50/50 border border-orange-100 p-3 space-y-3">
+            <div>
+              <label class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Blend mode</label>
+              <div class="relative mt-1.5">
+                <select id="selBlend" class="w-full appearance-none rounded-lg border border-orange-200 bg-white px-2.5 py-2 pr-8 text-xs text-slate-700 outline-none focus:border-accent/60 cursor-pointer">
+                  <option value="normal">Normal · sem mistura</option>
+                  <option value="multiply">Multiply · absorve sombras</option>
+                  <option value="overlay">Overlay · realça contraste</option>
+                  <option value="soft-light">Soft-light · suave</option>
+                </select>
+                <svg class="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center justify-between">
+                <label class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Opacidade</label>
+                <span id="lblOpacidade" class="text-[11px] font-bold text-accent">100%</span>
+              </div>
+              <input id="rangeOpacidade" type="range" min="30" max="100" value="100" step="1" class="w-full mt-2 h-1.5 rounded-full appearance-none bg-orange-200 cursor-pointer">
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <p class="text-[10px] leading-relaxed text-slate-400 text-center pt-2 pb-1">
+        CDE Esquadrias · Protótipo demonstrativo
+      </p>
+    </div>
+  </aside>
+</div>
+
+<!-- MODAL PREVIEW -->
+<div id="modalPreview" class="fixed inset-0 z-50 bg-slate-900/80 hidden items-center justify-center p-3 sm:p-6 transition-opacity">
+  <div class="relative w-full max-w-4xl max-h-full flex flex-col items-center">
+    <button id="btnFecharPreview" class="absolute -top-10 right-0 sm:-top-12 sm:right-0 text-white/70 hover:text-white bg-black/30 hover:bg-black/50 rounded-full p-2 backdrop-blur transition-colors">
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18M6 6l12 12"/>
+      </svg>
+    </button>
+    <img id="imgPreview" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl border border-white/10 bg-white" src="" alt="Preview da simulação">
+    <div class="mt-4 flex gap-3">
+      <button id="btnFecharPreview2" class="btn bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white">Voltar e Editar</button>
+      <button id="btnSalvarPreview" class="btn btn-accent">Baixar Imagem</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ==========================================================
+     1. MOCK DATABASE (Cores, Acabamentos, Vidros, Produtos)
+     ========================================================== */
+  
+  // Cores do Alumínio
+  const CORES = [
+    { id: 'preto',      nome: 'Preto',      hex: '#202329', light: '#43494f', dark: '#0c0e11', swatch: '#202329' },
+    { id: 'branco',     nome: 'Branco',     hex: '#e9ecf0', light: '#ffffff', dark: '#aeb5bf', swatch: '#e9ecf0' },
+    { id: 'bronze',     nome: 'Bronze',     hex: '#7a5330', light: '#a97b4c', dark: '#452d1b', swatch: '#7a5330' }
+  ];
+
+  // Acabamentos do Alumínio
+  const ACABAMENTOS = [
+    { id: 'metalico', nome: 'Metálico', type: 'metal' },
+    { id: 'fosco',    nome: 'Preto Fosco', type: 'matte' },
+    { id: 'acetinado',nome: 'Acetinado', type: 'satin' },
+    { id: 'cromado',  nome: 'Cromado', type: 'chrome' }
+  ];
+
+  // Tipos de Vidro (incluindo as novas opções)
+  const VIDROS = [
+    { id: 'incolor', nome: 'Incolor', fill: 'rgba(204,231,242,0.30)', swatch: 'linear-gradient(135deg,#e6f4fa,#b3d6e5)' },
+    { id: 'verde',   nome: 'Verde',   fill: 'rgba(118,190,150,0.38)', swatch: 'linear-gradient(135deg,#a9e2c3,#5fb184)' },
+    { id: 'fume',    nome: 'Fumê',    fill: 'rgba(58,62,70,0.52)',    swatch: 'linear-gradient(135deg,#71767e,#2c3036)' },
+    { id: 'cinza',   nome: 'Cinza',   fill: 'rgba(120,120,120,0.45)', swatch: 'linear-gradient(135deg,#a0a0a0,#606060)' },
+    { id: 'cinza_claro', nome: 'Cinza Claro', fill: 'rgba(180,180,180,0.40)', swatch: 'linear-gradient(135deg,#d0d0d0,#909090)' },
+    { id: 'refl_cinza',  nome: 'Refl. Cinza', fill: 'rgba(140,145,153,0.50)', swatch: 'linear-gradient(135deg,#e0e5ed,#70757d)' },
+    { id: 'refl_champ',  nome: 'Refl. Champanhe', fill: 'rgba(196,179,155,0.50)', swatch: 'linear-gradient(135deg,#f0e6d6,#a0907a)' }
+  ];
+
+  const PRODUTOS = [
+    { id: 'porta-pivotante', nome: 'Porta Pivotante Elegance', folhas: '1 folha', tipo: 'porta1', dimensoes: { largura: 1.10, altura: 2.40 }, descricao: 'Porta pivotante em vidro temperado 10mm com ferragens aparentes.' },
+    { id: 'janela-4-folhas', nome: 'Janela de Correr 4 Folhas', folhas: '4 folhas', tipo: 'janela4', dimensoes: { largura: 3.20, altura: 1.40 }, descricao: 'Janela ampla com 4 folhas de correr, ideal para salas e varandas.' },
+    { id: 'janela-maxim', nome: 'Janela Maxim-Ar', folhas: '1 folha', tipo: 'maxim', dimensoes: { largura: 1.00, altura: 1.00 }, descricao: 'Janela com abertura para fora (maxim-ar), excelente para ventilação.' },
+    { id: 'fachada-fixa', nome: 'Fachada Fixa (Pele de Vidro)', folhas: 'Múltiplos painéis', tipo: 'fachada', dimensoes: { largura: 4.00, altura: 2.80 }, descricao: 'Sistema estrutural de vidro fixo com montantes verticais e travessas.' },
+    { id: 'porta-giro', nome: 'Porta de Giro Simples', folhas: '1 folha', tipo: 'porta_giro', dimensoes: { largura: 0.90, altura: 2.10 }, descricao: 'Porta de giro tradicional com batente e dobradiças.' },
+    { id: 'porta-gold', nome: 'Porta de Correr Gold', folhas: '3 folhas', tipo: 'porta3', dimensoes: { largura: 2.40, altura: 2.10 }, descricao: 'Alumínio linha Gold com 3 folhas de correr e vidro temperado 8mm.' },
+    { id: 'janela-suprema', nome: 'Janela de Correr Suprema', folhas: '2 folhas', tipo: 'janela2', dimensoes: { largura: 1.60, altura: 1.20 }, descricao: 'Linha Suprema com bandeira fixa e 2 folhas de correr.' },
+    { id: 'box-elegance', nome: 'Box de Banheiro Elegance', folhas: '2 folhas', tipo: 'box', dimensoes: { largura: 1.20, altura: 2.00 }, descricao: 'Box em vidro temperado 8mm com perfis Elegance.' }
+  ];
+
+  /* ==========================================================
+     2. ESTADO
+     ========================================================== */
+  const state = {
+    img: null,
+    vaos: [],
+    vaoAtivoId: null,
+    modoCriacao: false,
+    ptsTemp: [],
+    escalaOverlay: 1,
+    overlayW: 0,
+    overlayH: 0,
+    
+    annotationTool: null, // 'arrow', 'bubble'
+    annotations: [],
+    tempArrow: null,
+
+    defaultProduto: PRODUTOS[0],
+    defaultCor: CORES[0],
+    defaultAcabamento: ACABAMENTOS[0],
+    defaultVidro: VIDROS[0],
+    defaultBlend: 'normal',
+    defaultOpacidade: 1.0
+  };
+
+  /* ==========================================================
+     3. DOM
+     ========================================================== */
+  const $ = (id) => document.getElementById(id);
+  const view = $('view'), overlayContainer = $('overlayContainer'), ui = $('ui');
+  const annotationsCanvas = $('annotations');
+  const vctx = view.getContext('2d'), uctx = ui.getContext('2d'), actx = annotationsCanvas.getContext('2d');
+  const wrap = $('canvasWrap'), dropzone = $('dropzone'), toolbar = $('toolbar'), hint = $('hint');
+
+  /* ==========================================================
+     4. TEXTURA PROCEDURAL
+     ========================================================== */
+  const texCache = new Map();
+
+  function criarTextura(produto, cor, acabamento, vidro) {
+    const S = 640;
+    const cv = document.createElement('canvas');
+    cv.width = S; cv.height = S;
+    const g = cv.getContext('2d');
+    g.clearRect(0, 0, S, S);
+    g.lineJoin = 'round';
+
+    const metal = (x, y, w, h) => {
+      if (w <= 0 || h <= 0) return;
+      let lg = g.createLinearGradient(x, y, x + w, y + h);
+      
+      if (acabamento.type === 'matte') {
+        lg.addColorStop(0, cor.hex);
+        lg.addColorStop(1, cor.hex);
+      } else if (acabamento.type === 'metal') {
+        lg.addColorStop(0, cor.light); 
+        lg.addColorStop(0.3, cor.hex);
+        lg.addColorStop(0.5, '#ffffff'); 
+        lg.addColorStop(0.7, cor.hex); 
+        lg.addColorStop(1, cor.dark);
+      } else if (acabamento.type === 'chrome') {
+        lg.addColorStop(0, '#ffffff');
+        lg.addColorStop(0.4, '#d0d0d0');
+        lg.addColorStop(0.6, '#ffffff');
+        lg.addColorStop(1, '#909090');
+      } else {
+        lg.addColorStop(0, cor.light); 
+        lg.addColorStop(0.4, cor.hex);
+        lg.addColorStop(0.6, cor.hex); 
+        lg.addColorStop(1, cor.dark);
+      }
+      
+      g.fillStyle = lg; 
+      g.fillRect(x, y, w, h);
+    };
+
+    const anel = (x, y, w, h, fw) => {
+      metal(x, y, w, fw); metal(x, y + h - fw, w, fw);
+      metal(x, y, fw, h); metal(x + w - fw, y, fw, h);
+      g.strokeStyle = 'rgba(0,0,0,0.28)'; g.lineWidth = 1.5;
+      g.strokeRect(x + fw, y + fw, w - fw * 2, h - fw * 2);
+    };
+
+    const panoVidro = (x, y, w, h) => {
+      if (w <= 0 || h <= 0) return;
+      g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
+      g.fillStyle = vidro.fill; g.fillRect(x, y, w, h);
+      const lg = g.createLinearGradient(x, y + h, x + w, y);
+      lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(0.34, 'rgba(255,255,255,0.09)');
+      lg.addColorStop(0.48, 'rgba(255,255,255,0.26)'); lg.addColorStop(0.58, 'rgba(255,255,255,0.04)');
+      lg.addColorStop(1, 'rgba(255,255,255,0.12)');
+      g.fillStyle = lg; g.fillRect(x, y, w, h);
+      g.globalAlpha = 0.20; g.fillStyle = '#fff';
+      g.beginPath(); g.moveTo(x + w * 0.56, y); g.lineTo(x + w * 0.70, y);
+      g.lineTo(x + w * 0.40, y + h); g.lineTo(x + w * 0.26, y + h); g.closePath(); g.fill();
+      g.restore();
+    };
+
+    if (produto.tipo === 'porta1') {
+      const fw = Math.round(S * 0.040); 
+      anel(0, 0, S, S, fw);
+      const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
+      panoVidro(ix, iy, iw, ih);
+      anel(ix, iy, iw, ih, Math.round(S * 0.020));
+      metal(ix + iw * 0.85, iy + ih * 0.40, iw * 0.04, ih * 0.20);
+    }
+
+    if (produto.tipo === 'janela4') {
+      const fw = Math.round(S * 0.048); anel(0, 0, S, S, fw);
+      const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
+      const lw = iw / 4, lf = Math.round(S * 0.018);
+      for (let i = 0; i < 4; i++) {
+        const x = ix + i * lw; 
+        panoVidro(x, iy, lw, ih); 
+        anel(x, iy, lw, ih, lf);
+      }
+      metal(ix + lw * 2 - lf * 1.5, iy + ih * 0.45, lf * 0.8, ih * 0.10);
+      metal(ix + lw * 2 + lf * 0.7, iy + ih * 0.45, lf * 0.8, ih * 0.10);
+      metal(ix, iy + ih - lf * 0.9, iw, lf * 0.9);
+    }
+
+    if (produto.tipo === 'maxim') {
+      const fw = Math.round(S * 0.050); anel(0, 0, S, S, fw);
+      const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
+      panoVidro(ix, iy, iw, ih);
+      const hingeY = iy + ih * 0.75;
+      metal(ix, hingeY, iw, Math.round(S * 0.025));
+      metal(ix + iw * 0.45, iy + ih * 0.15, iw * 0.10, Math.round(S * 0.015));
+    }
+
+    if (produto.tipo === 'fachada') {
+      const fw = Math.round(S * 0.030); anel(0, 0, S, S, fw);
+      const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
+      const cols = 3, rows = 2;
+      const w = iw / cols, h = ih / rows;
+      for(let c = 0; c < cols; c++) {
+        for(let r = 0; r < rows; r++) {
+          panoVidro(ix + c * w, iy + r * h, w, h);
+        }
+      }
+      for (let c = 1; c < cols; c++) metal(ix + c * w - fw * 0.4, iy, fw * 0.8, ih);
+      for (let r = 1; r < rows; r++) metal(ix, iy + r * h - fw * 0.4, iw, fw * 0.8);
+    }
+
+    if (produto.tipo === 'porta_giro') {
+      const fw = Math.round(S * 0.055); anel(0, 0, S, S, fw);
+      const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
+      metal(ix, iy, iw, Math.round(S * 0.020)); 
+      const dw = iw * 0.95, dh = ih - (S * 0.020);
+      panoVidro(ix, iy + (S * 0.020), dw, dh);
+      anel(ix, iy + (S * 0.020), dw, dh, Math.round(S * 0.022));
+      metal(ix + dw * 0.85, iy + (S * 0.020) + dh * 0.48, dw * 0.06, dh * 0.03);
+      metal(ix, iy + (S * 0.020) + dh * 0.1, dw * 0.04, dh * 0.08);
+      metal(ix, iy + (S * 0.020) + dh * 0.8, dw * 0.04, dh * 0.08);
+    }
+
+    if (produto.tipo === 'porta3') {
+      const fw = Math.round(S * 0.038); anel(0, 0, S, S, fw);
+      const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
+      const lw = iw / 3, lf = Math.round(S * 0.024);
+      for (let i = 0; i < 3; i++) {
+        const x = ix + i * lw; panoVidro(x, iy, lw, ih); anel(x, iy, lw, ih, lf);
+      }
+      metal(ix + lw - lf * 2.6, iy + ih * 0.42, lf * 0.95, ih * 0.16);
+      metal(ix + lw * 2 - lf * 2.6, iy + ih * 0.42, lf * 0.95, ih * 0.16);
+      metal(ix, iy + ih - lf * 0.9, iw, lf * 0.9);
+    }
+    if (produto.tipo === 'janela2') {
+      const fw = Math.round(S * 0.048); anel(0, 0, S, S, fw);
+      const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
+      const barraY = iy + ih * 0.24, barraH = Math.round(S * 0.030);
+      panoVidro(ix, iy, iw, barraY - iy); anel(ix, iy, iw, barraY - iy, Math.round(S * 0.020));
+      metal(ix, barraY - barraH * 0.5, iw, barraH);
+      const by = barraY + barraH * 0.5, bh = iy + ih - by, lw = iw / 2, lf = Math.round(S * 0.022);
+      for (let i = 0; i < 2; i++) {
+        const x = ix + i * lw; panoVidro(x, by, lw, bh); anel(x, by, lw, bh, lf);
+      }
+      metal(ix + lw - lf * 2.6, by + bh * 0.40, lf * 0.95, bh * 0.20);
+      metal(ix, iy + ih - lf * 0.9, iw, lf * 0.9);
+    }
+    if (produto.tipo === 'box') {
+      const fw = Math.round(S * 0.022); anel(0, 0, S, S, fw);
+      const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
+      panoVidro(ix, iy, iw, ih);
+      const dx = ix + iw * 0.60; metal(dx - fw * 0.45, iy, fw * 0.90, ih);
+      [0.10, 0.50, 0.90].forEach(t => metal(ix, iy + ih * t - ih * 0.045, iw * 0.045, ih * 0.09));
+      metal(dx + iw * 0.07, iy + ih * 0.44, iw * 0.024, ih * 0.22);
+      metal(ix + iw * 0.10, iy + ih * 0.72, iw * 0.38, Math.max(4, ih * 0.014));
+      metal(ix, iy + ih - fw * 0.9, iw, fw * 0.9);
+    }
+    return cv;
+  }
+
+  function obterTextura(produto, cor, acabamento, vidro) {
+    const key = `${produto.id}|${cor.id}|${acabamento.id}|${vidro.id}`;
+    if (!texCache.has(key)) texCache.set(key, criarTextura(produto, cor, acabamento, vidro));
+    return texCache.get(key);
+  }
+
+  /* ==========================================================
+     5. HOMOGRAFIA (Warp de Perspectiva)
+     ========================================================== */
+  function homografia(pts) {
+    const [p0, p1, p2, p3] = pts;
+    const x0 = p0.x, y0 = p0.y, x1 = p1.x, y1 = p1.y;
+    const x2 = p2.x, y2 = p2.y, x3 = p3.x, y3 = p3.y;
+    const dx1 = x1 - x2, dx2 = x3 - x2, dx3 = x0 - x1 + x2 - x3;
+    const dy1 = y1 - y2, dy2 = y3 - y2, dy3 = y0 - y1 + y2 - y3;
+    let a, b, c, d, e, f, g, h;
+    if (Math.abs(dx3) < 1e-9 && Math.abs(dy3) < 1e-9) {
+      a = x1 - x0; b = x3 - x0; c = x0; d = y1 - y0; e = y3 - y0; f = y0; g = 0; h = 0;
+    } else {
+      const det = dx1 * dy2 - dx2 * dy1;
+      if (Math.abs(det) < 1e-12) return null;
+      g = (dx3 * dy2 - dx2 * dy3) / det; h = (dx1 * dy3 - dx3 * dy1) / det;
+      a = x1 - x0 + g * x1; b = x3 - x0 + h * x3; c = x0;
+      d = y1 - y0 + g * y1; e = y3 - y0 + h * y3; f = y0;
+    }
+    return [a, b, c, d, e, f, g, h, 1];
+  }
+
+  function inverter3x3(m) {
+    const [a, b, c, d, e, f, g, h, i] = m;
+    const A = (e * i - f * h), B = -(d * i - f * g), C = (d * h - e * g);
+    const D = -(b * i - c * h), E = (a * i - c * g), F = -(a * h - b * g);
+    const G = (b * f - c * e), H = -(a * f - c * d), I = (a * e - b * d);
+    const det = a * A + b * B + c * C;
+    if (Math.abs(det) < 1e-12) return null;
+    const inv = 1 / det;
+    return [A * inv, D * inv, G * inv, B * inv, E * inv, H * inv, C * inv, F * inv, I * inv];
+  }
+
+  function warpParaQuadrilatero(canvas, ctx, textura, pts) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const H = homografia(pts);
+    if (!H) return;
+    const I = inverter3x3(H);
+    if (!I) return;
+
+    const TW = textura.width, TH = textura.height;
+    const src = textura.getContext('2d').getImageData(0, 0, TW, TH).data;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    pts.forEach(p => {
+      if (p.x < minX) minX = p.x; if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x; if (p.y > maxY) maxY = p.y;
+    });
+    minX = Math.max(0, Math.floor(minX)); minY = Math.max(0, Math.floor(minY));
+    maxX = Math.min(canvas.width - 1, Math.ceil(maxX)); maxY = Math.min(canvas.height - 1, Math.ceil(maxY));
+
+    const W = maxX - minX + 1, Hh = maxY - minY + 1;
+    if (W <= 0 || Hh <= 0) return;
+
+    const imgData = ctx.createImageData(W, Hh);
+    const dst = imgData.data;
+
+    const i00 = I[0], i01 = I[1], i02 = I[2];
+    const i10 = I[3], i11 = I[4], i12 = I[5];
+    const i20 = I[6], i21 = I[7], i22 = I[8];
+
+    for (let y = 0; y < Hh; y++) {
+      const Y = minY + y + 0.5, rowBase = y * W * 4;
+      for (let x = 0; x < W; x++) {
+        const X = minX + x + 0.5;
+        const den = i20 * X + i21 * Y + i22;
+        if (den === 0) continue;
+        const u = (i00 * X + i01 * Y + i02) / den;
+        if (u < 0 || u > 1) continue;
+        const v = (i10 * X + i11 * Y + i12) / den;
+        if (v < 0 || v > 1) continue;
+
+        let fx = u * TW - 0.5, fy = v * TH - 0.5;
+        if (fx < 0) fx = 0; else if (fx > TW - 1) fx = TW - 1;
+        if (fy < 0) fy = 0; else if (fy > TH - 1) fy = TH - 1;
+
+        const x0 = fx | 0, y0 = fy | 0;
+        const x1 = x0 + 1 < TW ? x0 + 1 : TW - 1;
+        const y1 = y0 + 1 < TH ? y0 + 1 : TH - 1;
+        const ax = fx - x0, ay = fy - y0;
+        const w00 = (1 - ax) * (1 - ay), w10 = ax * (1 - ay);
+        const w01 = (1 - ax) * ay, w11 = ax * ay;
+
+        const o00 = (y0 * TW + x0) * 4, o10 = (y0 * TW + x1) * 4;
+        const o01 = (y1 * TW + x0) * 4, o11 = (y1 * TW + x1) * 4;
+        const o = rowBase + x * 4;
+
+        dst[o]     = src[o00]     * w00 + src[o10]     * w10 + src[o01]     * w01 + src[o11]     * w11;
+        dst[o + 1] = src[o00 + 1] * w00 + src[o10 + 1] * w10 + src[o01 + 1] * w01 + src[o11 + 1] * w11;
+        dst[o + 2] = src[o00 + 2] * w00 + src[o10 + 2] * w10 + src[o01 + 2] * w01 + src[o11 + 2] * w11;
+        dst[o + 3] = src[o00 + 3] * w00 + src[o10 + 3] * w10 + src[o01 + 3] * w01 + src[o11 + 3] * w11;
+      }
+    }
+    ctx.putImageData(imgData, minX, minY);
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.beginPath();
+    pts.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /* ==========================================================
+     6. ORDENAÇÃO DE PONTOS
+     ========================================================== */
+  function ordenarPontos(pts) {
+    if (pts.length !== 4) return pts.slice();
+    const cx = pts.reduce((s, p) => s + p.x, 0) / 4;
+    const cy = pts.reduce((s, p) => s + p.y, 0) / 4;
+    let arr = pts.slice().sort((a, b) => Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx));
+    let area = 0;
+    for (let i = 0; i < 4; i++) {
+      const a = arr[i], b = arr[(i + 1) % 4];
+      area += a.x * b.y - b.x * a.y;
+    }
+    if (area < 0) arr.reverse();
+    const ux = -0.70710678, uy = -0.70710678;
+    let melhor = 0, melhorScore = -Infinity;
+    arr.forEach((p, i) => {
+      const dx = p.x - cx, dy = p.y - cy;
+      const len = Math.hypot(dx, dy) || 1;
+      const score = (dx / len) * ux + (dy / len) * uy;
+      if (score > melhorScore) { melhorScore = score; melhor = i; }
+    });
+    return arr.slice(melhor).concat(arr.slice(0, melhor));
+  }
+
+  /* ==========================================================
+     7. RENDERIZAÇÃO
+     ========================================================== */
+  function desenharBase() {
+    vctx.clearRect(0, 0, view.width, view.height);
+    if (state.img) vctx.drawImage(state.img, 0, 0, view.width, view.height);
+  }
+
+  function renderizarVao(vao) {
+    const ctx = vao.overlayCtx;
+    const canvas = vao.overlayCanvas;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!state.img || vao.pts.length !== 4) return;
+    const s = state.escalaOverlay;
+    const ordem = ordenarPontos(vao.pts);
+    const ptsOverlay = ordem.map(p => ({ x: p.x * s, y: p.y * s }));
+    const textura = obterTextura(vao.produto, vao.cor, vao.acabamento, vao.vidro);
+    warpParaQuadrilatero(canvas, ctx, textura, ptsOverlay);
+  }
+
+  function renderizarUI() {
+    uctx.clearRect(0, 0, ui.width, ui.height);
+
+    state.vaos.forEach(vao => {
+      if (vao.pts.length === 0) return;
+      const ativo = vao.id === state.vaoAtivoId;
+      desenharPoligono(vao.pts, ativo);
+    });
+
+    if (state.modoCriacao && state.ptsTemp.length > 0) {
+      desenharPoligono(state.ptsTemp, true, true);
+    }
+  }
+
+  function desenharPoligono(pts, ativo, ehTemp) {
+    const lw = Math.max(2, ui.width * 0.0045);
+    uctx.save();
+    uctx.lineJoin = 'round'; uctx.lineCap = 'round';
+
+    uctx.beginPath();
+    uctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) uctx.lineTo(pts[i].x, pts[i].y);
+    if (pts.length > 2) uctx.closePath();
+
+    if (ativo || ehTemp) {
+      uctx.shadowColor = 'rgba(230, 92, 0, 0.75)';
+      uctx.shadowBlur = 14;
+      uctx.lineWidth = lw;
+      uctx.strokeStyle = 'rgba(230, 92, 0, 0.95)';
+      uctx.stroke();
+      uctx.shadowBlur = 0;
+      if (pts.length > 2) {
+        uctx.fillStyle = 'rgba(230, 92, 0, 0.10)';
+        uctx.fill();
+      }
+    } else {
+      uctx.lineWidth = lw * 0.8;
+      uctx.strokeStyle = 'rgba(230, 92, 0, 0.35)';
+      uctx.stroke();
+    }
+
+    const r = Math.max(10, ui.width * 0.015);
+    pts.forEach((p, i) => {
+      uctx.beginPath();
+      uctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      uctx.fillStyle = 'rgba(18, 10, 7, 0.88)';
+      uctx.fill();
+      uctx.lineWidth = Math.max(2, r * 0.30);
+      uctx.strokeStyle = (ativo || ehTemp) ? '#e65c00' : 'rgba(230, 92, 0, 0.50)';
+      uctx.stroke();
+
+      uctx.fillStyle = (ativo || ehTemp) ? '#e65c00' : 'rgba(230, 92, 0, 0.50)';
+      uctx.font = `700 ${Math.round(r * 1.15)}px Inter, system-ui, sans-serif`;
+      uctx.textAlign = 'center'; uctx.textBaseline = 'middle';
+      uctx.fillText(String(i + 1), p.x, p.y + r * 0.06);
+    });
+    uctx.restore();
+  }
+
+  function renderAnnotations() {
+    actx.clearRect(0, 0, annotationsCanvas.width, annotationsCanvas.height);
+    
+    const drawArrow = (start, end) => {
+      const headlen = 15;
+      const angle = Math.atan2(end.y - start.y, end.x - start.x);
+      
+      actx.beginPath();
+      actx.moveTo(start.x, start.y);
+      actx.lineTo(end.x, end.y);
+      actx.lineTo(end.x - headlen * Math.cos(angle - Math.PI / 6), end.y - headlen * Math.sin(angle - Math.PI / 6));
+      actx.moveTo(end.x, end.y);
+      actx.lineTo(end.x - headlen * Math.cos(angle + Math.PI / 6), end.y - headlen * Math.sin(angle + Math.PI / 6));
+      
+      actx.strokeStyle = '#e65c00';
+      actx.lineWidth = 4;
+      actx.lineCap = 'round';
+      actx.lineJoin = 'round';
+      actx.stroke();
+    };
+
+    const drawBubble = (x, y, text) => {
+      actx.font = '600 14px Inter, sans-serif';
+      const padding = 12;
+      const w = actx.measureText(text).width + padding * 2;
+      const h = 36;
+      
+      actx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      actx.strokeStyle = '#e65c00';
+      actx.lineWidth = 2;
+      actx.beginPath();
+      actx.roundRect(x - w/2, y - h, w, h, 8);
+      actx.fill();
+      actx.stroke();
+
+      actx.beginPath();
+      actx.moveTo(x - 8, y);
+      actx.lineTo(x, y + 10);
+      actx.lineTo(x + 8, y);
+      actx.closePath();
+      actx.fill();
+      actx.stroke();
+
+      actx.fillStyle = '#1e293b'; // slate-800
+      actx.textAlign = 'center';
+      actx.textBaseline = 'middle';
+      actx.fillText(text, x, y - h/2);
+    };
+
+    state.annotations.forEach(a => {
+      if (a.type === 'arrow') drawArrow(a.start, a.end);
+      if (a.type === 'bubble') drawBubble(a.x, a.y, a.text);
+    });
+
+    if (state.tempArrow) {
+      drawArrow(state.tempArrow.start, state.tempArrow.end);
+    }
+  }
+
+  function renderTudo() {
+    desenharBase();
+    state.vaos.forEach(v => renderizarVao(v));
+    renderizarUI();
+    renderAnnotations();
+  }
+
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+      if (w < 2 * r) r = w / 2;
+      if (h < 2 * r) r = h / 2;
+      this.beginPath();
+      this.moveTo(x + r, y);
+      this.arcTo(x + w, y, x + w, y + h, r);
+      this.arcTo(x + w, y + h, x, y + h, r);
+      this.arcTo(x, y + h, x, y, r);
+      this.arcTo(x, y, x + w, y, r);
+      this.closePath();
+      return this;
+    };
+  }
+
+  /* ==========================================================
+     8. CARREGAMENTO DE IMAGEM
+     ========================================================== */
+  function carregarArquivo(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); configurarCanvas(img); };
+    img.src = url;
+  }
+
+  function configurarCanvas(img) {
+    const MAX_DIM = 1400;
+    const escala = Math.min(1, MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * escala));
+    const h = Math.max(1, Math.round(img.naturalHeight * escala));
+
+    view.width = w; view.height = h;
+    ui.width = w; ui.height = h;
+    annotationsCanvas.width = w; annotationsCanvas.height = h;
+
+    const escalaOverlay = Math.min(1, 900 / w);
+    state.overlayW = Math.max(1, Math.round(w * escalaOverlay));
+    state.overlayH = Math.max(1, Math.round(h * escalaOverlay));
+    state.escalaOverlay = state.overlayW / w;
+
+    state.vaos.forEach(v => v.overlayCanvas.remove());
+    state.vaos = [];
+    state.vaoAtivoId = null;
+    state.modoCriacao = false;
+    state.ptsTemp = [];
+    state.annotations = [];
+
+    state.img = img;
+
+    dropzone.classList.add('hidden');
+    wrap.classList.remove('hidden');
+    toolbar.classList.remove('hidden');
+    wrap.classList.remove('fade-up'); void wrap.offsetWidth; wrap.classList.add('fade-up');
+
+    texCache.clear();
+    sincronizarSidebar();
+    atualizarPassos();
+    atualizarDica();
+    renderTudo();
+  }
+
+  /* ==========================================================
+     9. INTERAÇÃO NO CANVAS
+     ========================================================== */
+  let arrastando = null;
+
+  function pontoDoEvento(e) {
+    const rect = view.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (view.width / rect.width),
+      y: (e.clientY - rect.top) * (view.height / rect.height)
+    };
+  }
+
+  function onPointerDown(e) {
+    if (!state.img) return;
+    e.preventDefault();
+    try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
+
+    const p = pontoDoEvento(e);
+
+    if (state.annotationTool === 'arrow') {
+      state.tempArrow = { start: p, end: p };
+      return;
+    }
+    if (state.annotationTool === 'bubble') {
+      const text = prompt('Digite o texto para o balão:');
+      if (text && text.trim()) {
+        state.annotations.push({ type: 'bubble', x: p.x, y: p.y, text: text.trim() });
+        renderAnnotations();
+      }
+      desativarFerramentasAnotacao();
+      return;
+    }
+
+    if (state.modoCriacao) {
+      state.ptsTemp.push(p);
+      if (state.ptsTemp.length === 4) {
+        criarVao(state.ptsTemp);
+        state.modoCriacao = false;
+        state.ptsTemp = [];
+        wrap.classList.remove('modo-criacao');
+        sincronizarSidebar();
+        renderTudo();
+        atualizarPassos();
+        atualizarDica();
+      } else {
+        renderizarUI();
+        atualizarDica();
+      }
+      return;
+    }
+
+    const vao = state.vaos.find(v => v.id === state.vaoAtivoId);
+    if (!vao) return;
+
+    const raio = Math.max(24, view.width * 0.035);
+    for (let i = 0; i < vao.pts.length; i++) {
+      const d = Math.hypot(vao.pts[i].x - p.x, vao.pts[i].y - p.y);
+      if (d < raio) { arrastando = { vaoId: vao.id, index: i }; return; }
+    }
+  }
+
+  function onPointerMove(e) {
+    const p = pontoDoEvento(e);
+
+    if (state.tempArrow) {
+      state.tempArrow.end = p;
+      renderAnnotations();
+      return;
+    }
+
+    if (!arrastando) return;
+    e.preventDefault();
+    const vao = state.vaos.find(v => v.id === arrastando.vaoId);
+    if (!vao) return;
+    vao.pts[arrastando.index] = p;
+    renderizarUI();
+    renderizarVao(vao);
+  }
+
+  function onPointerUp(e) {
+    if (state.tempArrow) {
+      state.annotations.push({ type: 'arrow', start: state.tempArrow.start, end: state.tempArrow.end });
+      state.tempArrow = null;
+      renderAnnotations();
+      desativarFerramentasAnotacao();
+      return;
+    }
+
+    if (!arrastando) return;
+    arrastando = null;
+    try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
+    renderizarUI();
+  }
+
+  wrap.addEventListener('pointerdown', onPointerDown);
+  wrap.addEventListener('pointermove', onPointerMove);
+  wrap.addEventListener('pointerup', onPointerUp);
+  wrap.addEventListener('pointercancel', onPointerUp);
+  wrap.addEventListener('pointerleave', (e) => { if (arrastando) onPointerUp(e); });
+
+  /* ==========================================================
+     10. CRIAÇÃO / GERENCIAMENTO DE VÃOS
+     ========================================================== */
+  function criarVao(pts) {
+    const id = 'vao-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+    const overlayCanvas = document.createElement('canvas');
+    overlayCanvas.className = 'absolute inset-0 w-full h-full pointer-events-none';
+    overlayCanvas.width = state.overlayW;
+    overlayCanvas.height = state.overlayH;
+    overlayCanvas.style.mixBlendMode = state.defaultBlend === 'normal' ? 'normal' : state.defaultBlend;
+    overlayCanvas.style.opacity = String(state.defaultOpacidade);
+    overlayContainer.appendChild(overlayCanvas);
+
+    const vao = {
+      id,
+      pts: pts.slice(),
+      produto: state.defaultProduto,
+      cor: state.defaultCor,
+      acabamento: state.defaultAcabamento,
+      vidro: state.defaultVidro,
+      blend: state.defaultBlend,
+      opacidade: state.defaultOpacidade,
+      overlayCanvas,
+      overlayCtx: overlayCanvas.getContext('2d')
+    };
+    state.vaos.push(vao);
+    state.vaoAtivoId = vao.id;
+    renderizarVao(vao);
+    return vao;
+  }
+
+  function iniciarNovoVao() {
+    desativarFerramentasAnotacao();
+    state.modoCriacao = true;
+    state.ptsTemp = [];
+    state.vaoAtivoId = null;
+    wrap.classList.add('modo-criacao');
+    sincronizarSidebar();
+    renderizarUI();
+    atualizarDica();
+    atualizarPassos();
+  }
+
+  function removerVaoAtivo() {
+    const vao = state.vaos.find(v => v.id === state.vaoAtivoId);
+    if (!vao) return;
+    vao.overlayCanvas.remove();
+    state.vaos = state.vaos.filter(v => v.id !== vao.id);
+    state.vaoAtivoId = state.vaos.length > 0 ? state.vaos[0].id : null;
+    sincronizarSidebar();
+    renderTudo();
+    atualizarPassos();
+    atualizarDica();
+  }
+
+  function limparTudo() {
+    state.vaos.forEach(v => v.overlayCanvas.remove());
+    state.vaos = [];
+    state.vaoAtivoId = null;
+    state.modoCriacao = false;
+    state.ptsTemp = [];
+    state.annotations = [];
+    state.annotationTool = null;
+    wrap.classList.remove('modo-criacao');
+    wrap.classList.remove('modo-anotacao');
+    sincronizarSidebar();
+    renderTudo();
+    atualizarPassos();
+    atualizarDica();
+  }
+
+  /* ==========================================================
+     11. SIDEBAR / SINCRONIZAÇÃO
+     ========================================================== */
+  function vaoAtivo() {
+    return state.vaos.find(v => v.id === state.vaoAtivoId);
+  }
+
+  function sincronizarSidebar() {
+    const selVao = $('selVao');
+    const btnRemover = $('btnRemoverVao');
+    const configPanel = $('configPanel');
+    const vaoInfo = $('vaoInfo');
+
+    selVao.innerHTML = '';
+
+    if (state.vaos.length === 0) {
+      selVao.innerHTML = '<option value="">Nenhum vão</option>';
+      selVao.disabled = true;
+      btnRemover.disabled = true;
+      configPanel.classList.add('opacity-40', 'pointer-events-none');
+      vaoInfo.textContent = state.modoCriacao ? 'Clique 4 vezes na imagem para criar o vão.' : 'Clique em + Novo Vão para começar.';
+      return;
+    }
+
+    selVao.disabled = false;
+    configPanel.classList.remove('opacity-40', 'pointer-events-none');
+
+    state.vaos.forEach((v, i) => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = `Vão ${i + 1} · ${v.produto.nome}`;
+      selVao.appendChild(opt);
+    });
+
+    if (state.vaoAtivoId) {
+      selVao.value = state.vaoAtivoId;
+      btnRemover.disabled = false;
+      const vao = vaoAtivo();
+      if (vao) {
+        $('selProduto').value = vao.produto.id;
+        atualizarInfoProduto(vao.produto);
+        $('gridCores').querySelectorAll('[data-cor]').forEach(b => b.classList.toggle('swatch-active', b.dataset.cor === vao.cor.id));
+        $('gridAcabamentos').querySelectorAll('[data-acabamento]').forEach(b => b.classList.toggle('swatch-active', b.dataset.acabamento === vao.acabamento.id));
+        $('gridVidros').querySelectorAll('[data-vidro]').forEach(b => b.classList.toggle('swatch-active', b.dataset.vidro === vao.vidro.id));
+        $('selBlend').value = vao.blend;
+        $('rangeOpacidade').value = String(Math.round(vao.opacidade * 100));
+        $('lblOpacidade').textContent = Math.round(vao.opacidade * 100) + '%';
+        vaoInfo.textContent = `Vão ${state.vaos.indexOf(vao) + 1} · ${vao.pts.length} pontos`;
+      }
+    } else {
+      selVao.value = '';
+      btnRemover.disabled = true;
+      vaoInfo.textContent = 'Selecione um vão para editar.';
+    }
+  }
+
+  function atualizarInfoProduto(produto) {
+    const p = produto || PRODUTOS[0];
+    const dim = `${p.dimensoes.largura.toFixed(2).replace('.', ',')} × ${p.dimensoes.altura.toFixed(2).replace('.', ',')} m`;
+    $('produtoInfo').innerHTML = `
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-slate-700 font-bold">${p.folhas}</span>
+        <span class="text-accent font-bold">${dim}</span>
+      </div>
+      <p class="mt-1.5 leading-relaxed">${p.descricao}</p>
+    `;
+  }
+
+  /* ==========================================================
+     12. MONTAGEM DOS CONTROLES
+     ========================================================== */
+  function montarProdutos() {
+    const sel = $('selProduto');
+    sel.innerHTML = PRODUTOS.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+    sel.value = state.defaultProduto.id;
+
+    sel.addEventListener('change', () => {
+      const vao = vaoAtivo();
+      if (!vao) return;
+      vao.produto = PRODUTOS.find(p => p.id === sel.value);
+      atualizarInfoProduto(vao.produto);
+      renderizarVao(vao);
+      sincronizarSidebar();
+      atualizarPassos();
+    });
+    atualizarInfoProduto(state.defaultProduto);
+  }
+
+  function montarCores() {
+    const grid = $('gridCores');
+    grid.innerHTML = CORES.map(c => `
+      <button type="button" data-cor="${c.id}" class="flex flex-col items-center gap-1 rounded-xl border border-orange-100 bg-white p-1.5 transition hover:border-accent/60 active:scale-95 shadow-sm">
+        <span class="w-6 h-6 rounded-full ring-1 ring-black/5 shadow-inner" style="background:${c.swatch}"></span>
+        <span class="text-[9px] font-medium text-slate-500 text-center leading-tight">${c.nome}</span>
+      </button>
+    `).join('');
+
+    grid.querySelectorAll('[data-cor]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const vao = vaoAtivo();
+        if (!vao) return;
+        vao.cor = CORES.find(c => c.id === btn.dataset.cor);
+        grid.querySelectorAll('[data-cor]').forEach(b => b.classList.toggle('swatch-active', b.dataset.cor === vao.cor.id));
+        renderizarVao(vao);
+      });
+    });
+    grid.querySelector(`[data-cor="${state.defaultCor.id}"]`).classList.add('swatch-active');
+  }
+
+  function montarAcabamentos() {
+    const grid = $('gridAcabamentos');
+    grid.innerHTML = ACABAMENTOS.map(a => `
+      <button type="button" data-acabamento="${a.id}" class="flex flex-col items-center justify-center rounded-xl border border-orange-100 bg-white p-2 h-12 transition hover:border-accent/60 active:scale-95 shadow-sm">
+        <span class="text-[10px] font-bold text-slate-600">${a.nome}</span>
+      </button>
+    `).join('');
+
+    grid.querySelectorAll('[data-acabamento]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const vao = vaoAtivo();
+        if (!vao) return;
+        vao.acabamento = ACABAMENTOS.find(a => a.id === btn.dataset.acabamento);
+        grid.querySelectorAll('[data-acabamento]').forEach(b => b.classList.toggle('swatch-active', b.dataset.acabamento === vao.acabamento.id));
+        renderizarVao(vao);
+      });
+    });
+    grid.querySelector(`[data-acabamento="${state.defaultAcabamento.id}"]`).classList.add('swatch-active');
+  }
+
+  function montarVidros() {
+    const grid = $('gridVidros');
+    grid.innerHTML = VIDROS.map(v => `
+      <button type="button" data-vidro="${v.id}" class="flex flex-col items-center gap-1 rounded-xl border border-orange-100 bg-white p-1.5 transition hover:border-accent/60 active:scale-95 shadow-sm">
+        <span class="w-6 h-6 rounded-md ring-1 ring-black/5" style="background:${v.swatch}"></span>
+        <span class="text-[8px] font-medium text-slate-500 text-center leading-tight">${v.nome}</span>
+      </button>
+    `).join('');
+
+    grid.querySelectorAll('[data-vidro]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const vao = vaoAtivo();
+        if (!vao) return;
+        vao.vidro = VIDROS.find(v => v.id === btn.dataset.vidro);
+        grid.querySelectorAll('[data-vidro]').forEach(b => b.classList.toggle('swatch-active', b.dataset.vidro === vao.vidro.id));
+        renderizarVao(vao);
+      });
+    });
+    grid.querySelector(`[data-vidro="${state.defaultVidro.id}"]`).classList.add('swatch-active');
+  }
+
+  function montarAjustesEsteticos() {
+    const selBlend = $('selBlend'), range = $('rangeOpacidade'), lbl = $('lblOpacidade');
+
+    selBlend.addEventListener('change', () => {
+      const vao = vaoAtivo();
+      if (!vao) return;
+      vao.blend = selBlend.value;
+      vao.overlayCanvas.style.mixBlendMode = vao.blend === 'normal' ? 'normal' : vao.blend;
+    });
+
+    range.addEventListener('input', () => {
+      const vao = vaoAtivo();
+      if (!vao) return;
+      vao.opacidade = Number(range.value) / 100;
+      vao.overlayCanvas.style.opacity = String(vao.opacidade);
+      lbl.textContent = Math.round(vao.opacidade * 100) + '%';
+    });
+
+    selBlend.value = state.defaultBlend;
+    range.value = String(Math.round(state.defaultOpacidade * 100));
+    lbl.textContent = Math.round(state.defaultOpacidade * 100) + '%';
+  }
+
+  /* ==========================================================
+     13. PASSOS / DICAS
+     ========================================================== */
+  function atualizarPassos() {
+    const temFoto = !!state.img;
+    const temVaoCompleto = state.vaos.some(v => v.pts.length === 4);
+    const s1 = $('step1'), s2 = $('step2'), s3 = $('step3');
+
+    s1.dataset.state = temFoto ? 'done' : 'active';
+    s2.dataset.state = temVaoCompleto ? 'done' : (temFoto ? 'active' : 'idle');
+    s3.dataset.state = temVaoCompleto ? 'active' : 'idle';
+
+    if (!temFoto) { s2.dataset.state = 'idle'; s3.dataset.state = 'idle'; }
+  }
+
+  function atualizarDica() {
+    if (!state.img) { hint.classList.add('hidden'); return; }
+    hint.classList.remove('hidden');
+
+    if (state.annotationTool === 'arrow') {
+      hint.textContent = 'Clique e arraste para desenhar a seta';
+    } else if (state.annotationTool === 'bubble') {
+      hint.textContent = 'Clique para inserir o balão de texto';
+    } else if (state.modoCriacao) {
+      hint.textContent = `Novo vão: ponto ${state.ptsTemp.length + 1} de 4`;
+    } else if (state.vaoAtivoId) {
+      hint.textContent = 'Arraste os pontos para ajustar';
+    } else {
+      hint.textContent = 'Clique em + Novo Vão para adicionar um produto';
+    }
+  }
+
+  /* ==========================================================
+     14. COMPOSIÇÃO / PREVIEW / DOWNLOAD
+     ========================================================== */
+  function gerarComposicao() {
+    const out = document.createElement('canvas');
+    out.width = view.width;
+    out.height = view.height;
+    const g = out.getContext('2d');
+    g.drawImage(view, 0, 0);
+
+    state.vaos.forEach(vao => {
+      if (vao.pts.length !== 4) return;
+      g.globalAlpha = vao.opacidade;
+      g.globalCompositeOperation = vao.blend === 'normal' ? 'source-over' : vao.blend;
+      g.drawImage(vao.overlayCanvas, 0, 0, out.width, out.height);
+    });
+
+    g.globalAlpha = 1;
+    g.globalCompositeOperation = 'source-over';
+    
+    g.drawImage(annotationsCanvas, 0, 0);
+
+    return out;
+  }
+
+  function abrirPreview(srcOverride) {
+    if (!state.img) return;
+    const src = srcOverride || gerarComposicao().toDataURL('image/png');
+    $('imgPreview').src = src;
+    const modal = $('modalPreview');
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+  }
+
+  function fecharPreview() {
+    const modal = $('modalPreview');
+    modal.classList.add('hidden'); modal.classList.remove('flex');
+  }
+
+  function salvarImagem() {
+    if (!state.img) return;
+    const canvas = gerarComposicao();
+    const link = document.createElement('a');
+    link.download = `CDE-simulacao-${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+
+  /* ==========================================================
+     15. RESET / BOOTSTRAP
+     ========================================================== */
+  function resetar() {
+    state.img = null;
+    state.vaos.forEach(v => v.overlayCanvas.remove());
+    state.vaos = [];
+    state.vaoAtivoId = null;
+    state.modoCriacao = false;
+    state.ptsTemp = [];
+    state.annotations = [];
+    state.annotationTool = null;
+    wrap.classList.remove('modo-criacao');
+    wrap.classList.remove('modo-anotacao');
+    vctx.clearRect(0, 0, view.width, view.height);
+    uctx.clearRect(0, 0, ui.width, ui.height);
+    actx.clearRect(0, 0, annotationsCanvas.width, annotationsCanvas.height);
+    wrap.classList.add('hidden');
+    toolbar.classList.add('hidden');
+    dropzone.classList.remove('hidden');
+    $('inputGaleria').value = '';
+    $('inputCamera').value = '';
+    sincronizarSidebar();
+    atualizarPassos();
+    atualizarDica();
+  }
+
+  /* ==========================================================
+     16. LÓGICA DE ANOTAÇÕES (Seta e Balão)
+     ========================================================== */
+  function desativarFerramentasAnotacao() {
+    state.annotationTool = null;
+    state.tempArrow = null;
+    wrap.classList.remove('modo-anotacao');
+    $('btnAnotacaoSeta').classList.remove('btn-active');
+    $('btnAnotacaoBalao').classList.remove('btn-active');
+    atualizarDica();
+  }
+
+  $('btnAnotacaoSeta').addEventListener('click', () => {
+    if (state.annotationTool === 'arrow') {
+      desativarFerramentasAnotacao();
+    } else {
+      desativarFerramentasAnotacao();
+      state.annotationTool = 'arrow';
+      wrap.classList.add('modo-anotacao');
+      $('btnAnotacaoSeta').classList.add('btn-active');
+      atualizarDica();
+    }
+  });
+
+  $('btnAnotacaoBalao').addEventListener('click', () => {
+    if (state.annotationTool === 'bubble') {
+      desativarFerramentasAnotacao();
+    } else {
+      desativarFerramentasAnotacao();
+      state.annotationTool = 'bubble';
+      wrap.classList.add('modo-anotacao');
+      $('btnAnotacaoBalao').classList.add('btn-active');
+      atualizarDica();
+    }
+  });
+
+  /* ==========================================================
+     17. EVENTOS GERAIS
+     ========================================================== */
+  $('inputGaleria').addEventListener('change', (e) => carregarArquivo(e.target.files[0]));
+  $('inputCamera').addEventListener('change', (e) => carregarArquivo(e.target.files[0]));
+
+  $('btnNovoVaoToolbar').addEventListener('click', iniciarNovoVao);
+  $('btnNovoVaoSidebar').addEventListener('click', iniciarNovoVao);
+  $('btnLimparTudo').addEventListener('click', limparTudo);
+  $('btnTrocar').addEventListener('click', resetar);
+  $('btnPreview').addEventListener('click', () => abrirPreview());
+  $('btnFecharPreview').addEventListener('click', fecharPreview);
+  $('btnFecharPreview2').addEventListener('click', fecharPreview);
+  $('btnSalvarPreview').addEventListener('click', () => {
+    const img = $('imgPreview');
+    const link = document.createElement('a');
+    link.download = `CDE-render-${Date.now()}.png`;
+    link.href = img.src;
+    link.click();
+  });
+  $('btnSalvar').addEventListener('click', salvarImagem);
+  $('btnRemoverVao').addEventListener('click', removerVaoAtivo);
+
+  $('selVao').addEventListener('change', () => {
+    state.vaoAtivoId = $('selVao').value || null;
+    sincronizarSidebar();
+    renderizarUI();
+    atualizarDica();
+  });
+
+  wrap.addEventListener('dragstart', (e) => e.preventDefault());
+  wrap.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  function init() {
+    montarProdutos();
+    montarCores();
+    montarAcabamentos();
+    montarVidros();
+    montarAjustesEsteticos();
+    sincronizarSidebar();
+    atualizarPassos();
+    atualizarDica();
+  }
+  
+  init();
+  console.log("✅ CDE Simulador atualizado!");
+
+})();
+</script>
+</body>
+</html>
