@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -10,6 +10,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
+    darkMode: 'class',
     theme: {
       extend: {
         colors: {
@@ -94,38 +95,48 @@
 </style>
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 text-slate-800 font-sans antialiased selection:bg-accent/20 flex flex-col">
+<body class="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 text-slate-800 dark:text-slate-200 font-sans antialiased selection:bg-accent/20 flex flex-col transition-colors duration-300">
 
 <!-- TOPBAR -->
-<header class="shrink-0 border-b border-orange-100 bg-white/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 shadow-sm z-20">
+<header class="shrink-0 border-b border-orange-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 shadow-sm z-20">
   <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent2 grid place-items-center shadow-lg shadow-accent/20">
     <span class="text-white font-black text-sm tracking-tighter">CDE</span>
   </div>
   <div class="min-w-0">
-    <h1 class="text-sm font-bold tracking-tight text-slate-900 truncate">Simulador de Esquadrias</h1>
-    <p class="text-[11px] text-slate-500 truncate">Visualização de produtos direto na obra</p>
+    <h1 class="text-sm font-bold tracking-tight text-slate-900 dark:text-white truncate">Simulador de Esquadrias</h1>
+    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Visualização de produtos direto na obra</p>
   </div>
+  
+  <!-- Botão Dark Mode -->
+  <button id="themeToggle" class="ml-auto p-2 rounded-xl border border-orange-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-slate-700 transition-colors">
+    <svg id="iconSun" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>
+    </svg>
+    <svg id="iconMoon" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
 </header>
 
 <!-- CONTAINER PRINCIPAL -->
-<div class="flex flex-col lg:flex-row flex-1 lg:h-[calc(100vh-65px)] lg:overflow-hidden">
+<div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
 
   <!-- MAIN -->
   <main class="flex-1 flex flex-col min-h-0 overflow-y-auto">
     <!-- Passos -->
     <div class="shrink-0 px-3 pt-3 pb-1">
       <div class="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
-        <div id="step1" class="step" data-state="active">
+        <div id="step1" class="step dark:bg-slate-800 dark:border-slate-700" data-state="active">
           <span class="step-num">1</span>
-          <span class="text-[10px] leading-tight font-semibold text-slate-700">Suba a foto</span>
+          <span class="text-[10px] leading-tight font-semibold text-slate-700 dark:text-slate-300">Suba a foto</span>
         </div>
-        <div id="step2" class="step" data-state="idle">
+        <div id="step2" class="step dark:bg-slate-800 dark:border-slate-700" data-state="idle">
           <span class="step-num">2</span>
-          <span class="text-[10px] leading-tight font-semibold text-slate-700">Marque 4 cantos</span>
+          <span class="text-[10px] leading-tight font-semibold text-slate-700 dark:text-slate-300">Marque 4 cantos</span>
         </div>
-        <div id="step3" class="step" data-state="idle">
+        <div id="step3" class="step dark:bg-slate-800 dark:border-slate-700" data-state="idle">
           <span class="step-num">3</span>
-          <span class="text-[10px] leading-tight font-semibold text-slate-700">Configure o produto</span>
+          <span class="text-[10px] leading-tight font-semibold text-slate-700 dark:text-slate-300">Configure o produto</span>
         </div>
       </div>
     </div>
@@ -136,15 +147,15 @@
 
         <!-- Dropzone -->
         <div id="dropzone"
-             class="relative rounded-2xl border-2 border-dashed border-orange-200 bg-white/60 p-7 sm:p-10 text-center transition-colors hover:border-accent/50 hover:bg-white/80">
-          <div class="mx-auto w-14 h-14 rounded-2xl bg-orange-50 border border-orange-100 grid place-items-center mb-4 shadow-sm">
+             class="relative rounded-2xl border-2 border-dashed border-orange-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 p-7 sm:p-10 text-center transition-colors hover:border-accent/50 hover:bg-white/80 dark:hover:bg-slate-800">
+          <div class="mx-auto w-14 h-14 rounded-2xl bg-orange-50 dark:bg-slate-800 border border-orange-100 dark:border-slate-700 grid place-items-center mb-4 shadow-sm">
             <svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
               <circle cx="12" cy="13" r="4"/>
             </svg>
           </div>
-          <h2 class="text-base font-bold text-slate-900">Comece pela foto do ambiente</h2>
-          <p class="mt-1.5 text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Comece pela foto do ambiente</h2>
+          <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
             Fotografe a parede onde a esquadria será instalada. Você poderá adicionar vários produtos na mesma foto.
           </p>
           <div class="mt-5 flex flex-col sm:flex-row gap-2 justify-center">
@@ -155,7 +166,7 @@
               Galeria
               <input id="inputGaleria" type="file" accept="image/*" class="hidden">
             </label>
-            <label class="btn cursor-pointer">
+            <label class="btn dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600 cursor-pointer">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
               </svg>
@@ -167,7 +178,7 @@
 
         <!-- Canvas Stack -->
         <div id="canvasWrap"
-             class="hidden relative rounded-2xl overflow-hidden border border-orange-200 bg-black shadow-xl shadow-orange-900/10 fade-up">
+             class="hidden relative rounded-2xl overflow-hidden border border-orange-200 dark:border-slate-700 bg-black shadow-xl shadow-orange-900/10 fade-up">
           <canvas id="view" class="block w-full h-auto pointer-events-none"></canvas>
           <div id="overlayContainer" class="absolute inset-0 w-full h-full pointer-events-none"></div>
           
@@ -178,41 +189,35 @@
           <canvas id="ui" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
 
           <div id="hint"
-               class="absolute left-1/2 -translate-x-1/2 bottom-3 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur border border-orange-200 text-[10px] sm:text-[11px] text-slate-700 whitespace-nowrap pointer-events-none text-center transition-colors shadow-sm">
+               class="absolute left-1/2 -translate-x-1/2 bottom-3 px-3 py-1.5 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur border border-orange-200 dark:border-slate-700 text-[10px] sm:text-[11px] text-slate-700 dark:text-slate-300 whitespace-nowrap pointer-events-none text-center transition-colors shadow-sm">
             Toque nos cantos do vão
           </div>
         </div>
 
         <!-- Toolbar -->
         <div id="toolbar" class="hidden mt-3 flex flex-wrap items-center gap-2 justify-center sm:justify-start">
-          <button id="btnNovoVaoToolbar" class="btn">
+          <button id="btnNovoVaoToolbar" class="btn dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
             </svg>
             Novo Vão
           </button>
-          <button id="btnLimparTudo" class="btn">
+          <button id="btnLimparTudo" class="btn dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
             </svg>
             Limpar Tudo
           </button>
-          <button id="btnTrocar" class="btn">
+          <button id="btnTrocar" class="btn dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>
             </svg>
             Trocar Foto
           </button>
           
-          <div class="w-px h-6 bg-orange-200 mx-1 hidden sm:block"></div>
+          <div class="w-px h-6 bg-orange-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
 
-          <button id="btnAnotacaoSeta" class="btn" title="Desenhar Seta">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-            Seta
-          </button>
-          <button id="btnAnotacaoBalao" class="btn" title="Adicionar Balão de Texto">
+          <button id="btnAnotacaoBalao" class="btn dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600" title="Adicionar Balão de Texto">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
@@ -221,7 +226,7 @@
 
           <div class="flex-1"></div>
           
-          <button id="btnPreview" class="btn border-accent/30 text-accent hover:bg-orange-50">
+          <button id="btnPreview" class="btn border-accent/30 text-accent hover:bg-orange-50 dark:hover:bg-slate-800 dark:border-slate-600">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
             </svg>
@@ -240,7 +245,7 @@
   </main>
 
   <!-- SIDEBAR -->
-  <aside class="w-full lg:w-[380px] shrink-0 border-t lg:border-t-0 lg:border-l border-orange-100 bg-white lg:overflow-y-auto shadow-xl shadow-orange-900/5 z-10">
+  <aside class="w-full lg:w-[380px] shrink-0 border-t lg:border-t-0 lg:border-l border-orange-100 dark:border-slate-800 bg-white dark:bg-slate-900 lg:overflow-y-auto shadow-xl shadow-orange-900/5 z-10">
     <div class="p-4 space-y-6 pb-20 lg:pb-4">
 
       <!-- Vãos -->
@@ -248,25 +253,25 @@
         <div class="flex items-center justify-between gap-2 mb-2">
           <div class="flex items-center gap-2">
             <span class="w-1.5 h-4 rounded-full bg-accent"></span>
-            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Vãos na imagem</h3>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500 dark:text-slate-400">Vãos na imagem</h3>
           </div>
-          <button id="btnNovoVaoSidebar" class="btn text-[10px] px-2 py-1">+ Novo Vão</button>
+          <button id="btnNovoVaoSidebar" class="btn text-[10px] px-2 py-1 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600">+ Novo Vão</button>
         </div>
         <div class="flex gap-2">
           <div class="relative flex-1">
-            <select id="selVao" class="w-full appearance-none rounded-xl border border-orange-200 bg-white px-3 py-2.5 pr-9 text-sm text-slate-800 font-medium outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            <select id="selVao" class="w-full appearance-none rounded-xl border border-orange-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 pr-9 text-sm text-slate-800 dark:text-slate-200 font-medium outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             </select>
             <svg class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="m6 9 6 6 6-6"/>
             </svg>
           </div>
-          <button id="btnRemoverVao" class="btn px-2.5 py-2.5 disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+          <button id="btnRemoverVao" class="btn px-2.5 py-2.5 disabled:opacity-40 disabled:cursor-not-allowed dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600" disabled>
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
             </svg>
           </button>
         </div>
-        <p id="vaoInfo" class="mt-1.5 text-[10px] text-slate-500"></p>
+        <p id="vaoInfo" class="mt-1.5 text-[10px] text-slate-500 dark:text-slate-400"></p>
       </section>
 
       <!-- Painel de Configuração -->
@@ -274,22 +279,30 @@
         <section>
           <div class="flex items-center gap-2 mb-2">
             <span class="w-1.5 h-4 rounded-full bg-accent"></span>
-            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Produto</h3>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500 dark:text-slate-400">Produto</h3>
           </div>
           <div class="relative">
-            <select id="selProduto" class="w-full appearance-none rounded-xl border border-orange-200 bg-white px-3 py-2.5 pr-9 text-sm text-slate-800 font-medium outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/10 cursor-pointer">
+            <select id="selProduto" class="w-full appearance-none rounded-xl border border-orange-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 pr-9 text-sm text-slate-800 dark:text-slate-200 font-medium outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/10 cursor-pointer">
             </select>
             <svg class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="m6 9 6 6 6-6"/>
             </svg>
           </div>
-          <div id="produtoInfo" class="mt-2.5 rounded-xl bg-orange-50/50 border border-orange-100 p-3 text-[11px] text-slate-600"></div>
+          <div id="produtoInfo" class="mt-2.5 rounded-xl bg-orange-50/50 dark:bg-slate-800/50 border border-orange-100 dark:border-slate-700 p-3 text-[11px] text-slate-600 dark:text-slate-400"></div>
+          
+          <!-- Botão Inverter -->
+          <button id="btnInverter" class="btn w-full mt-2 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3v18M7 3v18M3 7l4-4 4 4M3 17l4 4 4-4"/>
+            </svg>
+            Inverter Lado
+          </button>
         </section>
 
         <section>
           <div class="flex items-center gap-2 mb-2">
             <span class="w-1.5 h-4 rounded-full bg-accent"></span>
-            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Cor do Alumínio</h3>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500 dark:text-slate-400">Cor do Alumínio</h3>
           </div>
           <div id="gridCores" class="grid grid-cols-3 gap-2"></div>
         </section>
@@ -297,7 +310,7 @@
         <section>
           <div class="flex items-center gap-2 mb-2">
             <span class="w-1.5 h-4 rounded-full bg-accent"></span>
-            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Acabamento (Alumínio)</h3>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500 dark:text-slate-400">Acabamento (Alumínio)</h3>
           </div>
           <div id="gridAcabamentos" class="grid grid-cols-2 gap-2"></div>
         </section>
@@ -305,7 +318,7 @@
         <section>
           <div class="flex items-center gap-2 mb-2">
             <span class="w-1.5 h-4 rounded-full bg-accent"></span>
-            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Tipo de Vidro</h3>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500 dark:text-slate-400">Tipo de Vidro</h3>
           </div>
           <div id="gridVidros" class="grid grid-cols-4 gap-1.5"></div>
         </section>
@@ -313,13 +326,13 @@
         <section>
           <div class="flex items-center gap-2 mb-2">
             <span class="w-1.5 h-4 rounded-full bg-accent"></span>
-            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Integração com a foto</h3>
+            <h3 class="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500 dark:text-slate-400">Integração com a foto</h3>
           </div>
-          <div class="rounded-xl bg-orange-50/50 border border-orange-100 p-3 space-y-3">
+          <div class="rounded-xl bg-orange-50/50 dark:bg-slate-800/50 border border-orange-100 dark:border-slate-700 p-3 space-y-3">
             <div>
-              <label class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Blend mode</label>
+              <label class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">Blend mode</label>
               <div class="relative mt-1.5">
-                <select id="selBlend" class="w-full appearance-none rounded-lg border border-orange-200 bg-white px-2.5 py-2 pr-8 text-xs text-slate-700 outline-none focus:border-accent/60 cursor-pointer">
+                <select id="selBlend" class="w-full appearance-none rounded-lg border border-orange-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-2.5 py-2 pr-8 text-xs text-slate-700 dark:text-slate-300 outline-none focus:border-accent/60 cursor-pointer">
                   <option value="normal">Normal · sem mistura</option>
                   <option value="multiply">Multiply · absorve sombras</option>
                   <option value="overlay">Overlay · realça contraste</option>
@@ -332,21 +345,22 @@
             </div>
             <div>
               <div class="flex items-center justify-between">
-                <label class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Opacidade</label>
+                <label class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">Opacidade</label>
                 <span id="lblOpacidade" class="text-[11px] font-bold text-accent">100%</span>
               </div>
-              <input id="rangeOpacidade" type="range" min="30" max="100" value="100" step="1" class="w-full mt-2 h-1.5 rounded-full appearance-none bg-orange-200 cursor-pointer">
+              <input id="rangeOpacidade" type="range" min="30" max="100" value="100" step="1" class="w-full mt-2 h-1.5 rounded-full appearance-none bg-orange-200 dark:bg-slate-700 cursor-pointer">
             </div>
           </div>
         </section>
       </div>
-
-      <p class="text-[10px] leading-relaxed text-slate-400 text-center pt-2 pb-1">
-        CDE Esquadrias · Protótipo demonstrativo
-      </p>
     </div>
   </aside>
 </div>
+
+<!-- FOOTER -->
+<footer class="shrink-0 text-center text-[10px] text-slate-400 dark:text-slate-500 py-2 border-t border-orange-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+  Projeto Alpha V5. Desenvolvido para CDE Blindex®.
+</footer>
 
 <!-- MODAL PREVIEW -->
 <div id="modalPreview" class="fixed inset-0 z-50 bg-slate-900/80 hidden items-center justify-center p-3 sm:p-6 transition-opacity">
@@ -357,7 +371,8 @@
       </svg>
     </button>
     <img id="imgPreview" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl border border-white/10 bg-white" src="" alt="Preview da simulação">
-    <div class="mt-4 flex gap-3">
+    
+    <div class="mt-4 flex flex-wrap justify-center gap-3">
       <button id="btnFecharPreview2" class="btn bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white">Voltar e Editar</button>
       <button id="btnSalvarPreview" class="btn btn-accent">Baixar Imagem</button>
     </div>
@@ -368,26 +383,62 @@
 (() => {
   'use strict';
 
-  /* ==========================================================
-     1. MOCK DATABASE (Cores, Acabamentos, Vidros, Produtos)
-     ========================================================== */
+  // ==========================================================
+  // GERENCIAMENTO DE TEMA (DARK MODE)
+  // ==========================================================
+  const themeToggle = document.getElementById('themeToggle');
+  const iconSun = document.getElementById('iconSun');
+  const iconMoon = document.getElementById('iconMoon');
+
+  function updateThemeIcons() {
+    if (document.documentElement.classList.contains('dark')) {
+      iconSun.classList.remove('hidden');
+      iconMoon.classList.add('hidden');
+    } else {
+      iconSun.classList.add('hidden');
+      iconMoon.classList.remove('hidden');
+    }
+  }
+
+  themeToggle.addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    updateThemeIcons();
+  });
+
+  if (localStorage.getItem('theme') === 'light') {
+    document.documentElement.classList.remove('dark');
+  } else {
+    document.documentElement.classList.add('dark');
+  }
+  updateThemeIcons();
+
+  // ==========================================================
+  // 1. MOCK DATABASE (BANCO DE DADOS SIMULADO)
+  // ==========================================================
   
-  // Cores do Alumínio
+  /**
+   * Definição das cores de alumínio disponíveis.
+   */
   const CORES = [
     { id: 'preto',      nome: 'Preto',      hex: '#202329', light: '#43494f', dark: '#0c0e11', swatch: '#202329' },
     { id: 'branco',     nome: 'Branco',     hex: '#e9ecf0', light: '#ffffff', dark: '#aeb5bf', swatch: '#e9ecf0' },
     { id: 'bronze',     nome: 'Bronze',     hex: '#7a5330', light: '#a97b4c', dark: '#452d1b', swatch: '#7a5330' }
   ];
 
-  // Acabamentos do Alumínio
+  /**
+   * Definição dos acabamentos (textura do metal).
+   */
   const ACABAMENTOS = [
     { id: 'metalico', nome: 'Metálico', type: 'metal' },
-    { id: 'fosco',    nome: 'Preto Fosco', type: 'matte' },
+    { id: 'fosco',    nome: 'Fosco', type: 'matte' },
     { id: 'acetinado',nome: 'Acetinado', type: 'satin' },
     { id: 'cromado',  nome: 'Cromado', type: 'chrome' }
   ];
 
-  // Tipos de Vidro (incluindo as novas opções)
+  /**
+   * Definição dos tipos de vidro (transparência e cor).
+   */
   const VIDROS = [
     { id: 'incolor', nome: 'Incolor', fill: 'rgba(204,231,242,0.30)', swatch: 'linear-gradient(135deg,#e6f4fa,#b3d6e5)' },
     { id: 'verde',   nome: 'Verde',   fill: 'rgba(118,190,150,0.38)', swatch: 'linear-gradient(135deg,#a9e2c3,#5fb184)' },
@@ -398,7 +449,18 @@
     { id: 'refl_champ',  nome: 'Refl. Champanhe', fill: 'rgba(196,179,155,0.50)', swatch: 'linear-gradient(135deg,#f0e6d6,#a0907a)' }
   ];
 
+  /**
+   * Catálogo de Produtos.
+   * --- É AQUI QUE VOCÊ ADICIONA NOVOS PRODUTOS ---
+   * - id: identificador único
+   * - nome: nome exibido no dropdown
+   * - folhas: texto descritivo (ex: "2 folhas")
+   * - tipo: define qual função de desenho será usada em criarTextura()
+   * - dimensoes: metragem fictícia
+   * - descricao: texto explicativo na sidebar
+   */
   const PRODUTOS = [
+    { id: 'chapa-vidro', nome: 'Chapa de Vidro (Sem Esquadria)', folhas: 'Vidro puro', tipo: 'chapa', dimensoes: { largura: 1.00, altura: 2.00 }, descricao: 'Chapa de vidro sem esquadria, furação ou ferragens. Apenas o pano de vidro.' },
     { id: 'porta-pivotante', nome: 'Porta Pivotante Elegance', folhas: '1 folha', tipo: 'porta1', dimensoes: { largura: 1.10, altura: 2.40 }, descricao: 'Porta pivotante em vidro temperado 10mm com ferragens aparentes.' },
     { id: 'janela-4-folhas', nome: 'Janela de Correr 4 Folhas', folhas: '4 folhas', tipo: 'janela4', dimensoes: { largura: 3.20, altura: 1.40 }, descricao: 'Janela ampla com 4 folhas de correr, ideal para salas e varandas.' },
     { id: 'janela-maxim', nome: 'Janela Maxim-Ar', folhas: '1 folha', tipo: 'maxim', dimensoes: { largura: 1.00, altura: 1.00 }, descricao: 'Janela com abertura para fora (maxim-ar), excelente para ventilação.' },
@@ -409,22 +471,23 @@
     { id: 'box-elegance', nome: 'Box de Banheiro Elegance', folhas: '2 folhas', tipo: 'box', dimensoes: { largura: 1.20, altura: 2.00 }, descricao: 'Box em vidro temperado 8mm com perfis Elegance.' }
   ];
 
-  /* ==========================================================
-     2. ESTADO
-     ========================================================== */
+  // ==========================================================
+  // 2. ESTADO GLOBAL DA APLICAÇÃO
+  // ==========================================================
   const state = {
-    img: null,
-    vaos: [],
-    vaoAtivoId: null,
-    modoCriacao: false,
-    ptsTemp: [],
-    escalaOverlay: 1,
+    img: null,               // Imagem de fundo carregada
+    vaos: [],                // Array contendo todos os vãos adicionados
+    vaoAtivoId: null,        // ID do vão atualmente selecionado
+    modoCriacao: false,      // Flag indicando se está aguardando cliques para criar vão
+    ptsTemp: [],             // Pontos temporários durante a criação
+    escalaOverlay: 1,        // Fator de escala para o canvas de overlay
     overlayW: 0,
     overlayH: 0,
     
-    annotationTool: null, // 'arrow', 'bubble'
-    annotations: [],
-    tempArrow: null,
+    annotationTool: null,    // Ferramenta ativa ('bubble' ou null)
+    annotations: [],         // Array de anotações (balões)
+    selectedAnnotationIndex: -1,
+    draggingBubble: null,    // Controle de arrasto de balão
 
     defaultProduto: PRODUTOS[0],
     defaultCor: CORES[0],
@@ -434,20 +497,28 @@
     defaultOpacidade: 1.0
   };
 
-  /* ==========================================================
-     3. DOM
-     ========================================================== */
+  // ==========================================================
+  // 3. REFERÊNCIAS DOM
+  // ==========================================================
   const $ = (id) => document.getElementById(id);
   const view = $('view'), overlayContainer = $('overlayContainer'), ui = $('ui');
   const annotationsCanvas = $('annotations');
   const vctx = view.getContext('2d'), uctx = ui.getContext('2d'), actx = annotationsCanvas.getContext('2d');
   const wrap = $('canvasWrap'), dropzone = $('dropzone'), toolbar = $('toolbar'), hint = $('hint');
 
-  /* ==========================================================
-     4. TEXTURA PROCEDURAL
-     ========================================================== */
+  // ==========================================================
+  // 4. GERAÇÃO PROCEDURAL DE TEXTURAS
+  // ==========================================================
   const texCache = new Map();
 
+  /**
+   * Gera o Canvas da textura do produto com base no tipo, cor, acabamento e vidro.
+   * @param {Object} produto - Objeto do produto selecionado
+   * @param {Object} cor - Objeto da cor do alumínio
+   * @param {Object} acabamento - Objeto do acabamento
+   * @param {Object} vidro - Objeto do tipo de vidro
+   * @returns {HTMLCanvasElement} Canvas contendo a textura desenhada
+   */
   function criarTextura(produto, cor, acabamento, vidro) {
     const S = 640;
     const cv = document.createElement('canvas');
@@ -456,6 +527,7 @@
     g.clearRect(0, 0, S, S);
     g.lineJoin = 'round';
 
+    // Função auxiliar para desenhar barras de metal com gradiente
     const metal = (x, y, w, h) => {
       if (w <= 0 || h <= 0) return;
       let lg = g.createLinearGradient(x, y, x + w, y + h);
@@ -485,6 +557,7 @@
       g.fillRect(x, y, w, h);
     };
 
+    // Função auxiliar para desenhar a moldura (anel)
     const anel = (x, y, w, h, fw) => {
       metal(x, y, w, fw); metal(x, y + h - fw, w, fw);
       metal(x, y, fw, h); metal(x + w - fw, y, fw, h);
@@ -492,6 +565,7 @@
       g.strokeRect(x + fw, y + fw, w - fw * 2, h - fw * 2);
     };
 
+    // Função auxiliar para desenhar o pano de vidro com reflexos
     const panoVidro = (x, y, w, h) => {
       if (w <= 0 || h <= 0) return;
       g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
@@ -507,6 +581,16 @@
       g.restore();
     };
 
+    // --- DESENHO: CHAPA DE VIDRO (SEM ESQUADRIA) ---
+    if (produto.tipo === 'chapa') {
+      panoVidro(0, 0, S, S);
+      // Borda sutil de corte de vidro
+      g.strokeStyle = 'rgba(255,255,255,0.2)';
+      g.lineWidth = 2;
+      g.strokeRect(1, 1, S - 2, S - 2);
+    }
+
+    // --- DESENHO: PORTA PIVOTANTE ---
     if (produto.tipo === 'porta1') {
       const fw = Math.round(S * 0.040); 
       anel(0, 0, S, S, fw);
@@ -516,6 +600,7 @@
       metal(ix + iw * 0.85, iy + ih * 0.40, iw * 0.04, ih * 0.20);
     }
 
+    // --- DESENHO: JANELA 4 FOLHAS ---
     if (produto.tipo === 'janela4') {
       const fw = Math.round(S * 0.048); anel(0, 0, S, S, fw);
       const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
@@ -530,6 +615,7 @@
       metal(ix, iy + ih - lf * 0.9, iw, lf * 0.9);
     }
 
+    // --- DESENHO: JANELA MAXIM-AR ---
     if (produto.tipo === 'maxim') {
       const fw = Math.round(S * 0.050); anel(0, 0, S, S, fw);
       const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
@@ -539,6 +625,7 @@
       metal(ix + iw * 0.45, iy + ih * 0.15, iw * 0.10, Math.round(S * 0.015));
     }
 
+    // --- DESENHO: FACHADA FIXA ---
     if (produto.tipo === 'fachada') {
       const fw = Math.round(S * 0.030); anel(0, 0, S, S, fw);
       const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
@@ -553,6 +640,7 @@
       for (let r = 1; r < rows; r++) metal(ix, iy + r * h - fw * 0.4, iw, fw * 0.8);
     }
 
+    // --- DESENHO: PORTA DE GIRO ---
     if (produto.tipo === 'porta_giro') {
       const fw = Math.round(S * 0.055); anel(0, 0, S, S, fw);
       const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
@@ -565,6 +653,7 @@
       metal(ix, iy + (S * 0.020) + dh * 0.8, dw * 0.04, dh * 0.08);
     }
 
+    // --- DESENHO: PORTA DE CORRER 3 FOLHAS ---
     if (produto.tipo === 'porta3') {
       const fw = Math.round(S * 0.038); anel(0, 0, S, S, fw);
       const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
@@ -576,6 +665,8 @@
       metal(ix + lw * 2 - lf * 2.6, iy + ih * 0.42, lf * 0.95, ih * 0.16);
       metal(ix, iy + ih - lf * 0.9, iw, lf * 0.9);
     }
+    
+    // --- DESENHO: JANELA DE CORRER 2 FOLHAS ---
     if (produto.tipo === 'janela2') {
       const fw = Math.round(S * 0.048); anel(0, 0, S, S, fw);
       const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
@@ -589,6 +680,8 @@
       metal(ix + lw - lf * 2.6, by + bh * 0.40, lf * 0.95, bh * 0.20);
       metal(ix, iy + ih - lf * 0.9, iw, lf * 0.9);
     }
+    
+    // --- DESENHO: BOX DE BANHEIRO ---
     if (produto.tipo === 'box') {
       const fw = Math.round(S * 0.022); anel(0, 0, S, S, fw);
       const ix = fw, iy = fw, iw = S - fw * 2, ih = S - fw * 2;
@@ -602,15 +695,23 @@
     return cv;
   }
 
+  /**
+   * Verifica se a textura já está em cache, caso contrário, chama criarTextura.
+   */
   function obterTextura(produto, cor, acabamento, vidro) {
     const key = `${produto.id}|${cor.id}|${acabamento.id}|${vidro.id}`;
     if (!texCache.has(key)) texCache.set(key, criarTextura(produto, cor, acabamento, vidro));
     return texCache.get(key);
   }
 
-  /* ==========================================================
-     5. HOMOGRAFIA (Warp de Perspectiva)
-     ========================================================== */
+  // ==========================================================
+  // 5. MATEMÁTICA: HOMOGRAFIA (PERSPECTIVA)
+  // ==========================================================
+  /**
+   * Calcula a matriz de homografia que mapeia um quadrado unitário para um quadrilátero.
+   * @param {Array} pts - Array de 4 pontos [TL, TR, BR, BL]
+   * @returns {Array} Matriz 3x3 representada em array plano
+   */
   function homografia(pts) {
     const [p0, p1, p2, p3] = pts;
     const x0 = p0.x, y0 = p0.y, x1 = p1.x, y1 = p1.y;
@@ -630,6 +731,9 @@
     return [a, b, c, d, e, f, g, h, 1];
   }
 
+  /**
+   * Inverte uma matriz 3x3.
+   */
   function inverter3x3(m) {
     const [a, b, c, d, e, f, g, h, i] = m;
     const A = (e * i - f * h), B = -(d * i - f * g), C = (d * h - e * g);
@@ -641,6 +745,10 @@
     return [A * inv, D * inv, G * inv, B * inv, E * inv, H * inv, C * inv, F * inv, I * inv];
   }
 
+  /**
+   * Aplica a distorção de perspectiva (warping) mapeando a textura para o quadrilátero.
+   * Utiliza mapeamento inverso (para cada pixel no destino, encontra a origem na textura).
+   */
   function warpParaQuadrilatero(canvas, ctx, textura, pts) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const H = homografia(pts);
@@ -712,9 +820,12 @@
     ctx.restore();
   }
 
-  /* ==========================================================
-     6. ORDENAÇÃO DE PONTOS
-     ========================================================== */
+  // ==========================================================
+  // 6. UTILITÁRIOS DE GEOMETRIA
+  // ==========================================================
+  /**
+   * Ordena 4 pontos para garantir que estejam no sentido [Top-Left, Top-Right, Bottom-Right, Bottom-Left].
+   */
   function ordenarPontos(pts) {
     if (pts.length !== 4) return pts.slice();
     const cx = pts.reduce((s, p) => s + p.x, 0) / 4;
@@ -737,26 +848,43 @@
     return arr.slice(melhor).concat(arr.slice(0, melhor));
   }
 
-  /* ==========================================================
-     7. RENDERIZAÇÃO
-     ========================================================== */
+  // ==========================================================
+  // 7. RENDERIZAÇÃO DO CANVAS
+  // ==========================================================
+  /**
+   * Limpa o canvas principal e desenha a foto de fundo.
+   */
   function desenharBase() {
     vctx.clearRect(0, 0, view.width, view.height);
     if (state.img) vctx.drawImage(state.img, 0, 0, view.width, view.height);
   }
 
+  /**
+   * Renderiza um vão específico no seu respectivo canvas de overlay.
+   */
   function renderizarVao(vao) {
     const ctx = vao.overlayCtx;
     const canvas = vao.overlayCanvas;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!state.img || vao.pts.length !== 4) return;
+    
     const s = state.escalaOverlay;
     const ordem = ordenarPontos(vao.pts);
-    const ptsOverlay = ordem.map(p => ({ x: p.x * s, y: p.y * s }));
+    let ptsOverlay = ordem.map(p => ({ x: p.x * s, y: p.y * s }));
+    
+    // Lógica de Inversão (Espelhamento)
+    if (vao.flipped) {
+      // Troca TL com TR e BL com BR
+      ptsOverlay = [ptsOverlay[1], ptsOverlay[0], ptsOverlay[3], ptsOverlay[2]];
+    }
+
     const textura = obterTextura(vao.produto, vao.cor, vao.acabamento, vao.vidro);
     warpParaQuadrilatero(canvas, ctx, textura, ptsOverlay);
   }
 
+  /**
+   * Desenha a interface de interação (pontos de arrasto, polígonos).
+   */
   function renderizarUI() {
     uctx.clearRect(0, 0, ui.width, ui.height);
 
@@ -771,6 +899,9 @@
     }
   }
 
+  /**
+   * Desenha o polígono de seleção e os pontos numerados.
+   */
   function desenharPoligono(pts, ativo, ehTemp) {
     const lw = Math.max(2, ui.width * 0.0045);
     uctx.save();
@@ -816,36 +947,27 @@
     uctx.restore();
   }
 
+  /**
+   * Desenha os balões de anotação.
+   */
   function renderAnnotations() {
     actx.clearRect(0, 0, annotationsCanvas.width, annotationsCanvas.height);
     
-    const drawArrow = (start, end) => {
-      const headlen = 15;
-      const angle = Math.atan2(end.y - start.y, end.x - start.x);
-      
-      actx.beginPath();
-      actx.moveTo(start.x, start.y);
-      actx.lineTo(end.x, end.y);
-      actx.lineTo(end.x - headlen * Math.cos(angle - Math.PI / 6), end.y - headlen * Math.sin(angle - Math.PI / 6));
-      actx.moveTo(end.x, end.y);
-      actx.lineTo(end.x - headlen * Math.cos(angle + Math.PI / 6), end.y - headlen * Math.sin(angle + Math.PI / 6));
-      
-      actx.strokeStyle = '#e65c00';
-      actx.lineWidth = 4;
-      actx.lineCap = 'round';
-      actx.lineJoin = 'round';
-      actx.stroke();
-    };
-
-    const drawBubble = (x, y, text) => {
+    const drawBubble = (x, y, text, isSelected) => {
       actx.font = '600 14px Inter, sans-serif';
       const padding = 12;
       const w = actx.measureText(text).width + padding * 2;
       const h = 36;
       
       actx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      actx.strokeStyle = '#e65c00';
+      actx.strokeStyle = isSelected ? '#3b82f6' : '#e65c00';
       actx.lineWidth = 2;
+      
+      if (isSelected) {
+        actx.shadowColor = 'rgba(59,130,246,0.5)';
+        actx.shadowBlur = 10;
+      }
+
       actx.beginPath();
       actx.roundRect(x - w/2, y - h, w, h, 8);
       actx.fill();
@@ -858,23 +980,22 @@
       actx.closePath();
       actx.fill();
       actx.stroke();
+      actx.shadowBlur = 0;
 
-      actx.fillStyle = '#1e293b'; // slate-800
+      actx.fillStyle = '#1e293b';
       actx.textAlign = 'center';
       actx.textBaseline = 'middle';
       actx.fillText(text, x, y - h/2);
     };
 
-    state.annotations.forEach(a => {
-      if (a.type === 'arrow') drawArrow(a.start, a.end);
-      if (a.type === 'bubble') drawBubble(a.x, a.y, a.text);
+    state.annotations.forEach((a, i) => {
+      if (a.type === 'bubble') drawBubble(a.x, a.y, a.text, i === state.selectedAnnotationIndex);
     });
-
-    if (state.tempArrow) {
-      drawArrow(state.tempArrow.start, state.tempArrow.end);
-    }
   }
 
+  /**
+   * Função mestre de renderização.
+   */
   function renderTudo() {
     desenharBase();
     state.vaos.forEach(v => renderizarVao(v));
@@ -882,6 +1003,7 @@
     renderAnnotations();
   }
 
+  // Polyfill para roundRect (compatibilidade com navegadores antigos)
   if (!CanvasRenderingContext2D.prototype.roundRect) {
     CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
       if (w < 2 * r) r = w / 2;
@@ -897,9 +1019,9 @@
     };
   }
 
-  /* ==========================================================
-     8. CARREGAMENTO DE IMAGEM
-     ========================================================== */
+  // ==========================================================
+  // 8. CARREGAMENTO DE IMAGEM
+  // ==========================================================
   function carregarArquivo(file) {
     if (!file || !file.type.startsWith('image/')) return;
     const url = URL.createObjectURL(file);
@@ -944,10 +1066,10 @@
     renderTudo();
   }
 
-  /* ==========================================================
-     9. INTERAÇÃO NO CANVAS
-     ========================================================== */
-  let arrastando = null;
+  // ==========================================================
+  // 9. INTERAÇÃO COM O CANVAS (EVENTOS)
+  // ==========================================================
+  let arrastandoVao = null;
 
   function pontoDoEvento(e) {
     const rect = view.getBoundingClientRect();
@@ -964,20 +1086,41 @@
 
     const p = pontoDoEvento(e);
 
-    if (state.annotationTool === 'arrow') {
-      state.tempArrow = { start: p, end: p };
-      return;
+    // 1. Checa clique em Anotação (Balão)
+    if (state.annotationTool === null) {
+      for (let i = state.annotations.length - 1; i >= 0; i--) {
+        const a = state.annotations[i];
+        if (a.type === 'bubble') {
+          actx.font = '600 14px Inter, sans-serif';
+          const w = actx.measureText(a.text).width + 24;
+          const h = 36;
+          if (p.x > a.x - w/2 && p.x < a.x + w/2 && p.y > a.y - h && p.y < a.y) {
+            state.selectedAnnotationIndex = i;
+            state.draggingBubble = { index: i, offsetX: p.x - a.x, offsetY: p.y - a.y };
+            renderAnnotations();
+            atualizarDica();
+            return;
+          }
+        }
+      }
+      state.selectedAnnotationIndex = -1;
+      renderAnnotations();
+      atualizarDica();
     }
+
+    // 2. Lógica de Ferramentas
     if (state.annotationTool === 'bubble') {
-      const text = prompt('Digite o texto para o balão:');
+      let text = prompt('Digite a observação:');
       if (text && text.trim()) {
-        state.annotations.push({ type: 'bubble', x: p.x, y: p.y, text: text.trim() });
+        text = 'Obs.: ' + text.trim();
+        state.annotations.push({ type: 'bubble', x: p.x, y: p.y, text: text });
         renderAnnotations();
       }
       desativarFerramentasAnotacao();
       return;
     }
 
+    // 3. Lógica de Criação de Vãos
     if (state.modoCriacao) {
       state.ptsTemp.push(p);
       if (state.ptsTemp.length === 4) {
@@ -996,45 +1139,45 @@
       return;
     }
 
+    // 4. Arrastar Vão
     const vao = state.vaos.find(v => v.id === state.vaoAtivoId);
     if (!vao) return;
 
     const raio = Math.max(24, view.width * 0.035);
     for (let i = 0; i < vao.pts.length; i++) {
       const d = Math.hypot(vao.pts[i].x - p.x, vao.pts[i].y - p.y);
-      if (d < raio) { arrastando = { vaoId: vao.id, index: i }; return; }
+      if (d < raio) { arrastandoVao = { vaoId: vao.id, index: i }; return; }
     }
   }
 
   function onPointerMove(e) {
     const p = pontoDoEvento(e);
 
-    if (state.tempArrow) {
-      state.tempArrow.end = p;
+    if (state.draggingBubble) {
+      const a = state.annotations[state.draggingBubble.index];
+      a.x = p.x - state.draggingBubble.offsetX;
+      a.y = p.y - state.draggingBubble.offsetY;
       renderAnnotations();
       return;
     }
 
-    if (!arrastando) return;
+    if (!arrastandoVao) return;
     e.preventDefault();
-    const vao = state.vaos.find(v => v.id === arrastando.vaoId);
+    const vao = state.vaos.find(v => v.id === arrastandoVao.vaoId);
     if (!vao) return;
-    vao.pts[arrastando.index] = p;
+    vao.pts[arrastandoVao.index] = p;
     renderizarUI();
     renderizarVao(vao);
   }
 
   function onPointerUp(e) {
-    if (state.tempArrow) {
-      state.annotations.push({ type: 'arrow', start: state.tempArrow.start, end: state.tempArrow.end });
-      state.tempArrow = null;
-      renderAnnotations();
-      desativarFerramentasAnotacao();
+    if (state.draggingBubble) {
+      state.draggingBubble = null;
       return;
     }
 
-    if (!arrastando) return;
-    arrastando = null;
+    if (!arrastandoVao) return;
+    arrastandoVao = null;
     try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
     renderizarUI();
   }
@@ -1043,11 +1186,23 @@
   wrap.addEventListener('pointermove', onPointerMove);
   wrap.addEventListener('pointerup', onPointerUp);
   wrap.addEventListener('pointercancel', onPointerUp);
-  wrap.addEventListener('pointerleave', (e) => { if (arrastando) onPointerUp(e); });
+  wrap.addEventListener('pointerleave', (e) => { 
+    if (arrastandoVao) onPointerUp(e); 
+    if (state.draggingBubble) state.draggingBubble = null;
+  });
 
-  /* ==========================================================
-     10. CRIAÇÃO / GERENCIAMENTO DE VÃOS
-     ========================================================== */
+  window.addEventListener('keydown', (e) => {
+    if ((e.key === 'Backspace' || e.key === 'Delete') && state.selectedAnnotationIndex !== -1) {
+      state.annotations.splice(state.selectedAnnotationIndex, 1);
+      state.selectedAnnotationIndex = -1;
+      renderAnnotations();
+      atualizarDica();
+    }
+  });
+
+  // ==========================================================
+  // 10. GERENCIAMENTO DE VÃOS
+  // ==========================================================
   function criarVao(pts) {
     const id = 'vao-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
     const overlayCanvas = document.createElement('canvas');
@@ -1067,6 +1222,7 @@
       vidro: state.defaultVidro,
       blend: state.defaultBlend,
       opacidade: state.defaultOpacidade,
+      flipped: false, // Novo atributo para inverter
       overlayCanvas,
       overlayCtx: overlayCanvas.getContext('2d')
     };
@@ -1108,6 +1264,7 @@
     state.ptsTemp = [];
     state.annotations = [];
     state.annotationTool = null;
+    state.selectedAnnotationIndex = -1;
     wrap.classList.remove('modo-criacao');
     wrap.classList.remove('modo-anotacao');
     sincronizarSidebar();
@@ -1116,9 +1273,9 @@
     atualizarDica();
   }
 
-  /* ==========================================================
-     11. SIDEBAR / SINCRONIZAÇÃO
-     ========================================================== */
+  // ==========================================================
+  // 11. SINCRONIZAÇÃO DA SIDEBAR
+  // ==========================================================
   function vaoAtivo() {
     return state.vaos.find(v => v.id === state.vaoAtivoId);
   }
@@ -1177,16 +1334,16 @@
     const dim = `${p.dimensoes.largura.toFixed(2).replace('.', ',')} × ${p.dimensoes.altura.toFixed(2).replace('.', ',')} m`;
     $('produtoInfo').innerHTML = `
       <div class="flex items-center justify-between gap-2">
-        <span class="text-slate-700 font-bold">${p.folhas}</span>
+        <span class="text-slate-700 dark:text-slate-300 font-bold">${p.folhas}</span>
         <span class="text-accent font-bold">${dim}</span>
       </div>
       <p class="mt-1.5 leading-relaxed">${p.descricao}</p>
     `;
   }
 
-  /* ==========================================================
-     12. MONTAGEM DOS CONTROLES
-     ========================================================== */
+  // ==========================================================
+  // 12. MONTAGEM DE CONTROLES
+  // ==========================================================
   function montarProdutos() {
     const sel = $('selProduto');
     sel.innerHTML = PRODUTOS.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
@@ -1207,9 +1364,9 @@
   function montarCores() {
     const grid = $('gridCores');
     grid.innerHTML = CORES.map(c => `
-      <button type="button" data-cor="${c.id}" class="flex flex-col items-center gap-1 rounded-xl border border-orange-100 bg-white p-1.5 transition hover:border-accent/60 active:scale-95 shadow-sm">
+      <button type="button" data-cor="${c.id}" class="flex flex-col items-center gap-1 rounded-xl border border-orange-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-1.5 transition hover:border-accent/60 active:scale-95 shadow-sm">
         <span class="w-6 h-6 rounded-full ring-1 ring-black/5 shadow-inner" style="background:${c.swatch}"></span>
-        <span class="text-[9px] font-medium text-slate-500 text-center leading-tight">${c.nome}</span>
+        <span class="text-[9px] font-medium text-slate-500 dark:text-slate-400 text-center leading-tight">${c.nome}</span>
       </button>
     `).join('');
 
@@ -1228,8 +1385,8 @@
   function montarAcabamentos() {
     const grid = $('gridAcabamentos');
     grid.innerHTML = ACABAMENTOS.map(a => `
-      <button type="button" data-acabamento="${a.id}" class="flex flex-col items-center justify-center rounded-xl border border-orange-100 bg-white p-2 h-12 transition hover:border-accent/60 active:scale-95 shadow-sm">
-        <span class="text-[10px] font-bold text-slate-600">${a.nome}</span>
+      <button type="button" data-acabamento="${a.id}" class="flex flex-col items-center justify-center rounded-xl border border-orange-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 h-12 transition hover:border-accent/60 active:scale-95 shadow-sm">
+        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-300">${a.nome}</span>
       </button>
     `).join('');
 
@@ -1248,9 +1405,9 @@
   function montarVidros() {
     const grid = $('gridVidros');
     grid.innerHTML = VIDROS.map(v => `
-      <button type="button" data-vidro="${v.id}" class="flex flex-col items-center gap-1 rounded-xl border border-orange-100 bg-white p-1.5 transition hover:border-accent/60 active:scale-95 shadow-sm">
+      <button type="button" data-vidro="${v.id}" class="flex flex-col items-center gap-1 rounded-xl border border-orange-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-1.5 transition hover:border-accent/60 active:scale-95 shadow-sm">
         <span class="w-6 h-6 rounded-md ring-1 ring-black/5" style="background:${v.swatch}"></span>
-        <span class="text-[8px] font-medium text-slate-500 text-center leading-tight">${v.nome}</span>
+        <span class="text-[8px] font-medium text-slate-500 dark:text-slate-400 text-center leading-tight">${v.nome}</span>
       </button>
     `).join('');
 
@@ -1289,9 +1446,9 @@
     lbl.textContent = Math.round(state.defaultOpacidade * 100) + '%';
   }
 
-  /* ==========================================================
-     13. PASSOS / DICAS
-     ========================================================== */
+  // ==========================================================
+  // 13. PASSOS / DICAS
+  // ==========================================================
   function atualizarPassos() {
     const temFoto = !!state.img;
     const temVaoCompleto = state.vaos.some(v => v.pts.length === 4);
@@ -1308,12 +1465,12 @@
     if (!state.img) { hint.classList.add('hidden'); return; }
     hint.classList.remove('hidden');
 
-    if (state.annotationTool === 'arrow') {
-      hint.textContent = 'Clique e arraste para desenhar a seta';
-    } else if (state.annotationTool === 'bubble') {
+    if (state.annotationTool === 'bubble') {
       hint.textContent = 'Clique para inserir o balão de texto';
     } else if (state.modoCriacao) {
       hint.textContent = `Novo vão: ponto ${state.ptsTemp.length + 1} de 4`;
+    } else if (state.selectedAnnotationIndex !== -1) {
+      hint.textContent = 'Pressione Backspace para apagar esta anotação';
     } else if (state.vaoAtivoId) {
       hint.textContent = 'Arraste os pontos para ajustar';
     } else {
@@ -1321,9 +1478,9 @@
     }
   }
 
-  /* ==========================================================
-     14. COMPOSIÇÃO / PREVIEW / DOWNLOAD
-     ========================================================== */
+  // ==========================================================
+  // 14. COMPOSIÇÃO / EXPORTAÇÃO
+  // ==========================================================
   function gerarComposicao() {
     const out = document.createElement('canvas');
     out.width = view.width;
@@ -1368,9 +1525,9 @@
     link.click();
   }
 
-  /* ==========================================================
-     15. RESET / BOOTSTRAP
-     ========================================================== */
+  // ==========================================================
+  // 15. RESET / BOOTSTRAP
+  // ==========================================================
   function resetar() {
     state.img = null;
     state.vaos.forEach(v => v.overlayCanvas.remove());
@@ -1380,6 +1537,7 @@
     state.ptsTemp = [];
     state.annotations = [];
     state.annotationTool = null;
+    state.selectedAnnotationIndex = -1;
     wrap.classList.remove('modo-criacao');
     wrap.classList.remove('modo-anotacao');
     vctx.clearRect(0, 0, view.width, view.height);
@@ -1395,29 +1553,17 @@
     atualizarDica();
   }
 
-  /* ==========================================================
-     16. LÓGICA DE ANOTAÇÕES (Seta e Balão)
-     ========================================================== */
-  function desativarFerramentasAnotacao() {
+  // ==========================================================
+  // 16. LÓGICA DE ANOTAÇÕES
+  // ==========================================================
+  function desativarFerramentasAnotacao(clearSelection = true) {
     state.annotationTool = null;
-    state.tempArrow = null;
+    if (clearSelection) state.selectedAnnotationIndex = -1;
     wrap.classList.remove('modo-anotacao');
-    $('btnAnotacaoSeta').classList.remove('btn-active');
     $('btnAnotacaoBalao').classList.remove('btn-active');
+    renderAnnotations();
     atualizarDica();
   }
-
-  $('btnAnotacaoSeta').addEventListener('click', () => {
-    if (state.annotationTool === 'arrow') {
-      desativarFerramentasAnotacao();
-    } else {
-      desativarFerramentasAnotacao();
-      state.annotationTool = 'arrow';
-      wrap.classList.add('modo-anotacao');
-      $('btnAnotacaoSeta').classList.add('btn-active');
-      atualizarDica();
-    }
-  });
 
   $('btnAnotacaoBalao').addEventListener('click', () => {
     if (state.annotationTool === 'bubble') {
@@ -1431,9 +1577,9 @@
     }
   });
 
-  /* ==========================================================
-     17. EVENTOS GERAIS
-     ========================================================== */
+  // ==========================================================
+  // 17. EVENTOS GERAIS
+  // ==========================================================
   $('inputGaleria').addEventListener('change', (e) => carregarArquivo(e.target.files[0]));
   $('inputCamera').addEventListener('change', (e) => carregarArquivo(e.target.files[0]));
 
@@ -1453,6 +1599,17 @@
   });
   $('btnSalvar').addEventListener('click', salvarImagem);
   $('btnRemoverVao').addEventListener('click', removerVaoAtivo);
+
+  // Lógica do Botão Inverter
+  $('btnInverter').addEventListener('click', () => {
+    const vao = vaoAtivo();
+    if (!vao) {
+      alert('Selecione um vão primeiro.');
+      return;
+    }
+    vao.flipped = !vao.flipped;
+    renderizarVao(vao);
+  });
 
   $('selVao').addEventListener('change', () => {
     state.vaoAtivoId = $('selVao').value || null;
@@ -1476,7 +1633,7 @@
   }
   
   init();
-  console.log("✅ CDE Simulador atualizado!");
+  console.log("✅ CDE Simulador atualizado! V5 com Chapa de Vidro, Inversão e Documentação.");
 
 })();
 </script>
